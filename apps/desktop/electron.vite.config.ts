@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   main: {},
@@ -8,9 +9,12 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
+        '@': resolve('src/renderer/src'),
         '@renderer': resolve('src/renderer/src')
       }
     },
-    plugins: [react()]
+    // electron-vite and the Tailwind Vite plugin can resolve Vite types from
+    // different workspace locations even when the runtime plugin stack is valid.
+    plugins: [react(), tailwindcss()] as never
   }
 })
