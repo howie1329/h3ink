@@ -48,7 +48,15 @@ docs/        # Product and technical reference docs
 
 ## Current status
 
-The monorepo foundation is in place. The next step is scaffolding `apps/desktop` and `apps/web`.
+The monorepo foundation is in place, and both `apps/desktop` and `apps/web` are scaffolded from the official CLIs.
+
+## Local development
+
+```bash
+npm install
+npm run dev:desktop
+npm run dev:web
+```
 
 ## Reference
 

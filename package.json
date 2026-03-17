@@ -10,6 +10,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:desktop": "turbo run dev --filter=@h3ink/desktop",
+    "dev:web": "turbo run dev --filter=@h3ink/web",
     "lint": "turbo run lint",
     "test": "turbo run test"
   },
