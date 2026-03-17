@@ -3,6 +3,9 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
+  title: "H3 Ink | Local-first Markdown for desktop",
+  description:
+    "A calm desktop-first Markdown writing app for plain files, live preview, native save flows, and a restrained writing surface.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -24,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="antialiased">
-      <body>
+      <body className="min-h-[100dvh]">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
