@@ -61,7 +61,8 @@ The intended feeling is close to ChatGPT at its best: simple, quiet, obvious, an
 - Focus states must remain visible.
 - Motion should be sparse and short.
 - Empty states should be almost invisible.
-- If an empty state works with a mark, a short label, and a short title, stop there.
+- Empty should feel intentional, not unfinished.
+- If an empty state works with a mark, a short label, a short title, and one quiet sentence, stop there.
 - Avoid “helpful” UI that interrupts the user’s flow.
 
 ## Desktop App Guidelines
@@ -79,14 +80,16 @@ The intended feeling is close to ChatGPT at its best: simple, quiet, obvious, an
 - Treat the sidebar as a quiet outline, not a feature surface.
 - Put brand identity at the top.
 - After branding, show only the smallest useful set of navigation groups.
+- Every screen should have one obvious active anchor.
 - Default to collapsible groups such as `Pinned` and `Recent`.
-- Keep note rows compact.
+- Keep note rows compact and rhythmically consistent.
 - Note rows should usually be just the note title.
 - Avoid per-row metadata unless it changes the user’s next decision.
 - Avoid icons on every note row unless they are necessary.
 - Reserve filled pills for the selected row only.
 - Prefer disclosure, spacing, and typography over cards, badges, and dividers.
 - The sidebar should stay visually lighter than the content area.
+- Keep spacing between brand, actions, section toggles, rows, and footer deliberate and compact.
 
 ### Top Chrome
 
@@ -101,6 +104,7 @@ The intended feeling is close to ChatGPT at its best: simple, quiet, obvious, an
 - Prioritize readability and low-friction editing.
 - Keep supporting UI out of the way of note content.
 - Use empty states with restraint.
+- Give placeholders just enough context to orient the user.
 - Do not let placeholders feel like marketing sections.
 
 ### Desktop UI Boundaries
@@ -144,9 +148,11 @@ Before shipping a screen, ask:
 
 - Can this be simpler?
 - Is the next action obvious?
+- Is there one clear active anchor on the screen?
 - Can I remove a label, border, card, or line of copy without losing clarity?
 - Does the screen feel linear rather than branching?
 - Is the content more visually important than the chrome?
+- Does the empty state feel intentional instead of unfinished?
 - Would this still feel good if it were only black, white, and gray?
 
 ## References

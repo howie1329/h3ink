@@ -31,6 +31,11 @@ const pinnedNotes = ['Welcome to H3 Ink']
 const recentNotes = ['Launch checklist', 'Markdown ideas', 'Release notes', 'Writing cues']
 
 type AppView = 'notes' | 'settings'
+type NoteGroup = 'pinned' | 'recent'
+
+type ActiveAnchor =
+  | { type: 'view'; view: AppView }
+  | { type: 'note'; group: NoteGroup; title: string }
 
 function SectionToggle({
   title,
@@ -67,6 +72,27 @@ function App(): React.JSX.Element {
   const [pinnedOpen, setPinnedOpen] = useState(true)
   const [recentOpen, setRecentOpen] = useState(true)
   const [activeView, setActiveView] = useState<AppView>('notes')
+  const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({
+    type: 'note',
+    group: 'pinned',
+    title: 'Welcome to H3 Ink'
+  })
+
+  const openNotesView = (anchor?: ActiveAnchor): void => {
+    setActiveView('notes')
+
+    if (anchor?.type === 'note') {
+      setActiveAnchor(anchor)
+      return
+    }
+
+    setActiveAnchor({ type: 'view', view: 'notes' })
+  }
+
+  const openSettingsView = (): void => {
+    setActiveView('settings')
+    setActiveAnchor({ type: 'view', view: 'settings' })
+  }
 
   return (
     <div className={cn('min-h-[100dvh] bg-transparent text-foreground', isDark && 'dark')}>
@@ -76,33 +102,43 @@ function App(): React.JSX.Element {
             collapsible="offcanvas"
             className="border-r border-sidebar-border/70 bg-sidebar/95 backdrop-blur-xl"
           >
-            <SidebarHeader className="gap-3 px-4 pb-3 pt-4">
+            <SidebarHeader className="gap-2 px-3 pb-2 pt-3">
               <Button
                 type="button"
-                onClick={() => setActiveView('notes')}
+                onClick={() => openNotesView()}
                 variant="ghost"
                 size="compact"
-                className="h-9 w-full justify-start gap-2.5 px-2.5"
+                className={cn(
+                  'h-8 w-full justify-start gap-2 px-2',
+                  activeAnchor.type === 'view' && activeAnchor.view === 'notes'
+                    ? 'bg-accent text-foreground'
+                    : 'text-foreground/80 hover:text-foreground'
+                )}
               >
-                <img src={appLogo} alt="H3 Ink logo" className="size-7 rounded-lg object-cover" />
+                <img src={appLogo} alt="H3 Ink logo" className="size-6 rounded-md object-cover" />
                 <div className="min-w-0">
                   <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                     H3 Ink
                   </p>
-                  <p className="mt-0.5 text-[0.92rem] text-foreground/80">Notes</p>
+                  <p className="text-[0.88rem] text-foreground/78">Notes</p>
                 </div>
               </Button>
             </SidebarHeader>
 
-            <SidebarContent className="px-2 py-2">
+            <SidebarContent className="px-2 py-1.5">
               <SidebarGroup>
                 <SidebarGroupContent>
                   <Button
                     type="button"
-                    onClick={() => setActiveView('notes')}
+                    onClick={() => openNotesView()}
                     variant="ghost"
                     size="compact"
-                    className="mb-3 w-full justify-start gap-2 text-foreground/78 hover:text-foreground"
+                    className={cn(
+                      'mb-2 w-full justify-start gap-2 px-3 text-foreground/76 hover:text-foreground',
+                      activeAnchor.type === 'view' && activeAnchor.view === 'notes'
+                        ? 'bg-accent text-foreground'
+                        : ''
+                    )}
                   >
                     <HugeiconsIcon icon={Add01Icon} className="size-4 shrink-0" strokeWidth={1.8} />
                     <span>New Note</span>
@@ -115,14 +151,24 @@ function App(): React.JSX.Element {
                     onToggle={() => setPinnedOpen((current) => !current)}
                   />
                   {pinnedOpen ? (
-                    <SidebarMenu className="mt-1 gap-0.5">
+                    <SidebarMenu className="mt-0.5 gap-0">
                       {pinnedNotes.map((note) => (
                         <SidebarMenuItem key={note}>
                           <SidebarMenuButton
-                            isActive={note === 'Welcome to H3 Ink'}
-                            onClick={() => setActiveView('notes')}
+                            isActive={
+                              activeAnchor.type === 'note' &&
+                              activeAnchor.group === 'pinned' &&
+                              activeAnchor.title === note
+                            }
+                            onClick={() =>
+                              openNotesView({
+                                type: 'note',
+                                group: 'pinned',
+                                title: note
+                              })
+                            }
                             size="compact"
-                            className="font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-foreground"
+                            className="font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
                           >
                             <span className="truncate">{note}</span>
                           </SidebarMenuButton>
@@ -131,7 +177,7 @@ function App(): React.JSX.Element {
                     </SidebarMenu>
                   ) : null}
 
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <SectionToggle
                       title="Recent"
                       open={recentOpen}
@@ -139,13 +185,24 @@ function App(): React.JSX.Element {
                       onToggle={() => setRecentOpen((current) => !current)}
                     />
                     {recentOpen ? (
-                      <SidebarMenu className="mt-1 gap-0.5">
+                      <SidebarMenu className="mt-0.5 gap-0">
                         {recentNotes.map((note) => (
                           <SidebarMenuItem key={note}>
                             <SidebarMenuButton
-                              onClick={() => setActiveView('notes')}
+                              isActive={
+                                activeAnchor.type === 'note' &&
+                                activeAnchor.group === 'recent' &&
+                                activeAnchor.title === note
+                              }
+                              onClick={() =>
+                                openNotesView({
+                                  type: 'note',
+                                  group: 'recent',
+                                  title: note
+                                })
+                              }
                               size="compact"
-                              className="font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                              className="font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
                             >
                               <span className="truncate">{note}</span>
                             </SidebarMenuButton>
@@ -158,15 +215,17 @@ function App(): React.JSX.Element {
               </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="mt-auto px-4 pb-4 pt-2">
+            <SidebarFooter className="mt-auto px-3 pb-3 pt-1.5">
               <Button
                 type="button"
-                onClick={() => setActiveView('settings')}
+                onClick={openSettingsView}
                 variant="ghost"
                 size="compact"
                 className={cn(
-                  'mb-1 w-full justify-start gap-2.5 hover:text-foreground',
-                  activeView === 'settings' ? 'bg-accent text-foreground' : 'text-muted-foreground'
+                  'mb-1 w-full justify-start gap-2 px-3 hover:text-foreground',
+                  activeAnchor.type === 'view' && activeAnchor.view === 'settings'
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground'
                 )}
               >
                 <HugeiconsIcon
@@ -182,7 +241,7 @@ function App(): React.JSX.Element {
                 onClick={() => setIsDark((current) => !current)}
                 variant="ghost"
                 size="compact"
-                className="w-full justify-start gap-2.5 text-muted-foreground hover:text-foreground"
+                className="w-full justify-start gap-2 px-3 text-muted-foreground hover:text-foreground"
               >
                 <HugeiconsIcon
                   icon={isDark ? Sun03Icon : Moon02Icon}
@@ -204,7 +263,7 @@ function App(): React.JSX.Element {
 
             <div className="flex flex-1 items-center justify-center px-6 py-10">
               {activeView === 'settings' ? (
-                <div className="flex flex-col items-center justify-center gap-5 text-center">
+                <div className="flex flex-col items-center justify-center gap-4 text-center">
                   <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
                     <HugeiconsIcon
                       icon={Settings02Icon}
@@ -219,10 +278,13 @@ function App(): React.JSX.Element {
                     <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
                       Settings
                     </h2>
+                    <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                      Preferences will stay sparse, predictable, and close to the writing flow.
+                    </p>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center gap-5 text-center">
+                <div className="flex flex-col items-center justify-center gap-4 text-center">
                   <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
                     <img src={appLogo} alt="H3 Ink mark" className="size-10 object-contain" />
                   </div>
@@ -233,6 +295,9 @@ function App(): React.JSX.Element {
                     <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
                       Writing surface
                     </h2>
+                    <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                      Your notes will open into a quiet editor with recent context close at hand.
+                    </p>
                   </div>
                 </div>
               )}
