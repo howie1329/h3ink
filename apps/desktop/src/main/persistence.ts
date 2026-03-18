@@ -1,9 +1,10 @@
-import { access, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import { access, mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises'
 import { constants as fsConstants } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { app, dialog, BrowserWindow } from 'electron'
 import type {
   H3LaunchState,
+  H3DeleteResult,
   H3MarkdownDocument,
   H3MissingRecentFile,
   H3RecentFile,
@@ -356,6 +357,16 @@ export async function saveMarkdownFileAs(input: {
   await recentFilesStore.addRecentFile(saved)
 
   return saved
+}
+
+export async function deleteMarkdownFile(input: { path: string }): Promise<H3DeleteResult> {
+  if (await pathExists(input.path)) {
+    await unlink(input.path)
+  }
+
+  await recentFilesStore.removePath(input.path)
+
+  return { path: input.path }
 }
 
 export async function listRecentFiles(): Promise<H3RecentFile[]> {

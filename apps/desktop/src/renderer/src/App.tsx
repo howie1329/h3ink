@@ -67,7 +67,8 @@ function App(): React.JSX.Element {
     openFile,
     loadRecentFile,
     saveNow,
-    saveAs
+    saveAs,
+    deleteCurrentNote
   } = useDocumentSession()
 
   return (
@@ -223,6 +224,16 @@ function App(): React.JSX.Element {
                   <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.8} />
                   Save
                 </Button>
+                {document.filePath ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="compact"
+                    onClick={() => void deleteCurrentNote()}
+                  >
+                    Delete
+                  </Button>
+                ) : null}
                 <SidebarTrigger className="text-foreground/78 md:hidden" />
               </div>
             </header>

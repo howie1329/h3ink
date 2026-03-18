@@ -20,6 +20,10 @@ export type H3SaveAsResult = {
   savedAt: string
 }
 
+export type H3DeleteResult = {
+  path: string
+}
+
 export type H3RecentFile = {
   path: string
   title: string
@@ -46,6 +50,7 @@ export interface FileGateway {
     content: string
     suggestedName?: string
   }) => Promise<H3SaveAsResult | null>
+  deleteMarkdownFile: (input: { path: string }) => Promise<H3DeleteResult>
   listRecentFiles: () => Promise<H3RecentFile[]>
   getLaunchState: () => Promise<H3LaunchState>
   setLastActiveFilePath: (input: { path: string | null }) => Promise<void>

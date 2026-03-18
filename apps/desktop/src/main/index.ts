@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
   createDesktopNote,
+  deleteMarkdownFile,
   ensureDefaultNotesDirectory,
   getLaunchState,
   listDesktopNotes,
@@ -68,6 +69,7 @@ app.whenReady().then(() => {
   ipcMain.handle('file-gateway:openRecentFile', (_, input) => openRecentFile(input))
   ipcMain.handle('file-gateway:saveMarkdownFile', (_, input) => saveMarkdownFile(input))
   ipcMain.handle('file-gateway:saveMarkdownFileAs', (_, input) => saveMarkdownFileAs(input))
+  ipcMain.handle('file-gateway:deleteMarkdownFile', (_, input) => deleteMarkdownFile(input))
   ipcMain.handle('file-gateway:listRecentFiles', () => listRecentFiles())
   ipcMain.handle('file-gateway:getLaunchState', () => getLaunchState())
   ipcMain.handle('file-gateway:setLastActiveFilePath', (_, input) => setLastActiveFilePath(input))

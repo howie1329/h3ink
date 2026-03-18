@@ -350,6 +350,28 @@ export function useDocumentSession() {
     }
   }, [defaultNotesPath, document.filePath, document.title, refreshDesktopNotes, refreshRecents])
 
+  const deleteCurrentNote = useCallback(async (): Promise<void> => {
+    if (!document.filePath) {
+      return
+    }
+
+    const confirmed = window.confirm(`Delete this note?\n\n${document.filePath}`)
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await window.api.deleteMarkdownFile({ path: document.filePath })
+      setDocument(createEmptyDocument())
+      setErrorMessage(null)
+      await window.api.setLastActiveFilePath({ path: null })
+      await refreshRecents()
+      await refreshDesktopNotes()
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Delete failed.')
+    }
+  }, [document.filePath, refreshDesktopNotes, refreshRecents])
+
   const saveLabel = useMemo(() => {
     if (!document.filePath) {
       return 'Draft'
@@ -383,6 +405,7 @@ export function useDocumentSession() {
     openFile,
     loadRecentFile,
     saveNow,
-    saveAs
+    saveAs,
+    deleteCurrentNote
   }
 }

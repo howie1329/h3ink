@@ -11,6 +11,7 @@ const api: FileGateway = {
   openRecentFile: (input) => ipcRenderer.invoke('file-gateway:openRecentFile', input),
   saveMarkdownFile: (input) => ipcRenderer.invoke('file-gateway:saveMarkdownFile', input),
   saveMarkdownFileAs: (input) => ipcRenderer.invoke('file-gateway:saveMarkdownFileAs', input),
+  deleteMarkdownFile: (input) => ipcRenderer.invoke('file-gateway:deleteMarkdownFile', input),
   listRecentFiles: () => ipcRenderer.invoke('file-gateway:listRecentFiles'),
   getLaunchState: () => ipcRenderer.invoke('file-gateway:getLaunchState'),
   setLastActiveFilePath: (input) => ipcRenderer.invoke('file-gateway:setLastActiveFilePath', input)
