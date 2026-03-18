@@ -2,6 +2,17 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import {
+  createDesktopNote,
+  ensureDefaultNotesDirectory,
+  getLaunchState,
+  listRecentFiles,
+  openMarkdownFile,
+  openRecentFile,
+  saveMarkdownFile,
+  saveMarkdownFileAs,
+  setLastActiveFilePath
+} from './persistence'
 
 function createWindow(): void {
   // Create the browser window.
@@ -49,10 +60,18 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.handle('file-gateway:ensureDefaultNotesDirectory', () => ensureDefaultNotesDirectory())
+  ipcMain.handle('file-gateway:createDesktopNote', (_, input) => createDesktopNote(input))
+  ipcMain.handle('file-gateway:openMarkdownFile', () => openMarkdownFile())
+  ipcMain.handle('file-gateway:openRecentFile', (_, input) => openRecentFile(input))
+  ipcMain.handle('file-gateway:saveMarkdownFile', (_, input) => saveMarkdownFile(input))
+  ipcMain.handle('file-gateway:saveMarkdownFileAs', (_, input) => saveMarkdownFileAs(input))
+  ipcMain.handle('file-gateway:listRecentFiles', () => listRecentFiles())
+  ipcMain.handle('file-gateway:getLaunchState', () => getLaunchState())
+  ipcMain.handle('file-gateway:setLastActiveFilePath', (_, input) => setLastActiveFilePath(input))
 
   createWindow()
+  void ensureDefaultNotesDirectory()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

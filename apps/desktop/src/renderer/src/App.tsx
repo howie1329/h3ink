@@ -1,19 +1,15 @@
 import {
   Add01Icon,
-  ArrowDown01Icon,
-  ArrowRight01Icon,
-  Moon02Icon,
-  Settings02Icon,
-  Sun03Icon
+  FolderOpenIcon,
+  SaveIcon,
+  SaveEnergy01Icon
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
 import appLogo from '../../../resources/icon-light.png'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -24,78 +20,26 @@ import {
   SidebarProvider,
   SidebarTrigger
 } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
-
-const pinnedNotes = ['Welcome to H3 Ink']
-
-const recentNotes = ['Launch checklist', 'Markdown ideas', 'Release notes', 'Writing cues']
-
-type AppView = 'notes' | 'settings'
-type NoteGroup = 'pinned' | 'recent'
-
-type ActiveAnchor =
-  | { type: 'view'; view: AppView }
-  | { type: 'note'; group: NoteGroup; title: string }
-
-function SectionToggle({
-  title,
-  open,
-  onToggle,
-  isDark
-}: {
-  title: string
-  open: boolean
-  onToggle: () => void
-  isDark: boolean
-}): React.JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={cn(
-        'flex w-full items-center gap-2 px-3 py-2 text-left text-[0.82rem] tracking-[0.2em] transition-colors',
-        isDark ? 'text-white/42 hover:text-white/62' : 'text-black/38 hover:text-black/58'
-      )}
-    >
-      <HugeiconsIcon
-        icon={open ? ArrowDown01Icon : ArrowRight01Icon}
-        className="size-3.5 shrink-0"
-        strokeWidth={2}
-      />
-      <span>{title}</span>
-    </button>
-  )
-}
+import { useDocumentSession } from '@/hooks/use-document-session'
 
 function App(): React.JSX.Element {
-  const [isDark, setIsDark] = useState(true)
-  const [pinnedOpen, setPinnedOpen] = useState(true)
-  const [recentOpen, setRecentOpen] = useState(true)
-  const [activeView, setActiveView] = useState<AppView>('notes')
-  const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({
-    type: 'note',
-    group: 'pinned',
-    title: 'Welcome to H3 Ink'
-  })
-
-  const openNotesView = (anchor?: ActiveAnchor): void => {
-    setActiveView('notes')
-
-    if (anchor?.type === 'note') {
-      setActiveAnchor(anchor)
-      return
-    }
-
-    setActiveAnchor({ type: 'view', view: 'notes' })
-  }
-
-  const openSettingsView = (): void => {
-    setActiveView('settings')
-    setActiveAnchor({ type: 'view', view: 'settings' })
-  }
+  const {
+    document,
+    recentFiles,
+    defaultNotesPath,
+    ready,
+    errorMessage,
+    saveLabel,
+    createNewNote,
+    updateContent,
+    openFile,
+    loadRecentFile,
+    saveNow,
+    saveAs
+  } = useDocumentSession()
 
   return (
-    <div className={cn('min-h-[100dvh] bg-transparent text-foreground', isDark && 'dark')}>
+    <div className="min-h-[100dvh] bg-transparent text-foreground dark">
       <SidebarProvider defaultOpen>
         <div className="flex min-h-[100dvh] w-full bg-transparent">
           <Sidebar
@@ -105,22 +49,17 @@ function App(): React.JSX.Element {
             <SidebarHeader className="gap-2 px-3 pb-2 pt-3">
               <Button
                 type="button"
-                onClick={() => openNotesView()}
+                onClick={() => void createNewNote()}
                 variant="ghost"
                 size="compact"
-                className={cn(
-                  'h-8 w-full justify-start gap-2 px-2',
-                  activeAnchor.type === 'view' && activeAnchor.view === 'notes'
-                    ? 'bg-accent text-foreground'
-                    : 'text-foreground/80 hover:text-foreground'
-                )}
+                className="h-8 w-full justify-start gap-2 px-2 text-foreground/80 hover:text-foreground"
               >
                 <img src={appLogo} alt="H3 Ink logo" className="size-6 rounded-md object-cover" />
                 <div className="min-w-0">
                   <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                     H3 Ink
                   </p>
-                  <p className="text-[0.88rem] text-foreground/78">Notes</p>
+                  <p className="truncate text-[0.88rem] text-foreground/78">{saveLabel}</p>
                 </div>
               </Button>
             </SidebarHeader>
@@ -130,177 +69,128 @@ function App(): React.JSX.Element {
                 <SidebarGroupContent>
                   <Button
                     type="button"
-                    onClick={() => openNotesView()}
+                    onClick={() => void createNewNote()}
                     variant="ghost"
                     size="compact"
-                    className={cn(
-                      'mb-2 w-full justify-start gap-2 px-3 text-foreground/76 hover:text-foreground',
-                      activeAnchor.type === 'view' && activeAnchor.view === 'notes'
-                        ? 'bg-accent text-foreground'
-                        : ''
-                    )}
+                    className="mb-2 w-full justify-start gap-2 px-3 text-foreground/76 hover:text-foreground"
                   >
                     <HugeiconsIcon icon={Add01Icon} className="size-4 shrink-0" strokeWidth={1.8} />
                     <span>New Note</span>
                   </Button>
-
-                  <SectionToggle
-                    title="Pinned"
-                    open={pinnedOpen}
-                    isDark={isDark}
-                    onToggle={() => setPinnedOpen((current) => !current)}
-                  />
-                  {pinnedOpen ? (
-                    <SidebarMenu className="mt-0.5 gap-0">
-                      {pinnedNotes.map((note) => (
-                        <SidebarMenuItem key={note}>
+                  <p className="px-3 pt-3 text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Recent Files
+                  </p>
+                  <SidebarMenu className="mt-2 gap-0">
+                    {recentFiles.length === 0 ? (
+                      <SidebarMenuItem>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          No saved notes yet.
+                        </div>
+                      </SidebarMenuItem>
+                    ) : (
+                      recentFiles.map((note) => (
+                        <SidebarMenuItem key={note.path}>
                           <SidebarMenuButton
-                            isActive={
-                              activeAnchor.type === 'note' &&
-                              activeAnchor.group === 'pinned' &&
-                              activeAnchor.title === note
-                            }
-                            onClick={() =>
-                              openNotesView({
-                                type: 'note',
-                                group: 'pinned',
-                                title: note
-                              })
-                            }
+                            isActive={document.filePath === note.path}
+                            onClick={() => void loadRecentFile(note.path)}
                             size="compact"
-                            className="font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
+                            className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
                           >
-                            <span className="truncate">{note}</span>
+                            <div className="min-w-0">
+                              <div className="truncate">{note.title}</div>
+                              <div className="truncate text-[0.72rem] text-muted-foreground">
+                                {note.path}
+                              </div>
+                            </div>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  ) : null}
-
-                  <div className="mt-3">
-                    <SectionToggle
-                      title="Recent"
-                      open={recentOpen}
-                      isDark={isDark}
-                      onToggle={() => setRecentOpen((current) => !current)}
-                    />
-                    {recentOpen ? (
-                      <SidebarMenu className="mt-0.5 gap-0">
-                        {recentNotes.map((note) => (
-                          <SidebarMenuItem key={note}>
-                            <SidebarMenuButton
-                              isActive={
-                                activeAnchor.type === 'note' &&
-                                activeAnchor.group === 'recent' &&
-                                activeAnchor.title === note
-                              }
-                              onClick={() =>
-                                openNotesView({
-                                  type: 'note',
-                                  group: 'recent',
-                                  title: note
-                                })
-                              }
-                              size="compact"
-                              className="font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
-                            >
-                              <span className="truncate">{note}</span>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
-                      </SidebarMenu>
-                    ) : null}
-                  </div>
+                      ))
+                    )}
+                  </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
             </SidebarContent>
-
-            <SidebarFooter className="mt-auto px-3 pb-3 pt-1.5">
-              <Button
-                type="button"
-                onClick={openSettingsView}
-                variant="ghost"
-                size="compact"
-                className={cn(
-                  'mb-1 w-full justify-start gap-2 px-3 hover:text-foreground',
-                  activeAnchor.type === 'view' && activeAnchor.view === 'settings'
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground'
-                )}
-              >
-                <HugeiconsIcon
-                  icon={Settings02Icon}
-                  className="size-4 shrink-0"
-                  strokeWidth={1.8}
-                />
-                <span>Settings</span>
-              </Button>
-
-              <Button
-                type="button"
-                onClick={() => setIsDark((current) => !current)}
-                variant="ghost"
-                size="compact"
-                className="w-full justify-start gap-2 px-3 text-muted-foreground hover:text-foreground"
-              >
-                <HugeiconsIcon
-                  icon={isDark ? Sun03Icon : Moon02Icon}
-                  className="size-4 shrink-0"
-                  strokeWidth={1.8}
-                />
-                <span>{isDark ? 'Light mode' : 'Dark mode'}</span>
-              </Button>
-            </SidebarFooter>
           </Sidebar>
 
           <SidebarInset className="bg-background/70">
             <header className="flex items-center justify-between border-b border-border/70 px-4 py-2.5 md:px-6">
-              <p className="text-[0.82rem] text-foreground/70">
-                {activeView === 'settings' ? 'Settings' : 'Landing shell'}
-              </p>
-              <SidebarTrigger className="text-foreground/78 md:hidden" />
+              <div className="min-w-0">
+                <p className="truncate text-[0.82rem] text-foreground/88">{document.title}</p>
+                <p className="truncate text-[0.72rem] text-muted-foreground">
+                  {document.filePath ?? defaultNotesPath ?? 'Draft note'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="compact" onClick={() => void openFile()}>
+                  <HugeiconsIcon icon={FolderOpenIcon} data-icon="inline-start" strokeWidth={1.8} />
+                  Open
+                </Button>
+                <Button type="button" variant="outline" size="compact" onClick={() => void saveAs()}>
+                  <HugeiconsIcon
+                    icon={SaveEnergy01Icon}
+                    data-icon="inline-start"
+                    strokeWidth={1.8}
+                  />
+                  Save As
+                </Button>
+                <Button type="button" size="compact" onClick={() => void saveNow()}>
+                  <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.8} />
+                  Save
+                </Button>
+                <SidebarTrigger className="text-foreground/78 md:hidden" />
+              </div>
             </header>
 
-            <div className="flex flex-1 items-center justify-center px-6 py-10">
-              {activeView === 'settings' ? (
-                <div className="flex flex-col items-center justify-center gap-4 text-center">
-                  <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
-                    <HugeiconsIcon
-                      icon={Settings02Icon}
-                      className="size-8 text-muted-foreground"
-                      strokeWidth={1.7}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                      Coming soon
+            <div className="flex h-full flex-1 flex-col px-4 py-4 md:px-6">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                <div className="rounded-2xl border border-border/70 bg-card/50 p-3">
+                  <textarea
+                    value={document.content}
+                    onChange={(event) => updateContent(event.target.value)}
+                    placeholder="Start writing. The first edit will create a Markdown file in ~/Desktop/h3inknotes."
+                    className="h-[calc(100vh-12rem)] min-h-80 w-full resize-none rounded-xl border border-input/70 bg-background/80 px-4 py-3 font-mono text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-2xl border border-border/70 bg-card/40 p-4">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Persistence
                     </p>
-                    <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
-                      Settings
-                    </h2>
-                    <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                      Preferences will stay sparse, predictable, and close to the writing flow.
+                    <div className="mt-3 flex flex-col gap-2 text-sm text-foreground/84">
+                      <p>Status: {ready ? saveLabel : 'Loading'}</p>
+                      <p>Origin: {document.origin}</p>
+                      <p>Dirty: {document.isDirty ? 'Yes' : 'No'}</p>
+                      <p>Last saved: {document.lastSavedAt ? new Date(document.lastSavedAt).toLocaleString() : 'Not yet'}</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/70 bg-card/40 p-4">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Paths
+                    </p>
+                    <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
+                      <p className="break-all">Default folder: {defaultNotesPath || 'Loading...'}</p>
+                      <p className="break-all">Current file: {document.filePath ?? 'No file yet'}</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/70 bg-card/40 p-4">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Notes
+                    </p>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      This phase only covers create, open, save, autosave, and recent-file behavior.
                     </p>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-4 text-center">
-                  <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
-                    <img src={appLogo} alt="H3 Ink mark" className="size-10 object-contain" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                      Coming soon
-                    </p>
-                    <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
-                      Writing surface
-                    </h2>
-                    <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                      Your notes will open into a quiet editor with recent context close at hand.
-                    </p>
-                  </div>
+              </div>
+
+              {errorMessage ? (
+                <div className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  {errorMessage}
                 </div>
-              )}
+              ) : null}
             </div>
           </SidebarInset>
         </div>
