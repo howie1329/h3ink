@@ -1,202 +1,160 @@
 # H3 Ink Design System
 
-This document defines the shared UI/UX direction for the desktop app and the website.
+This document defines the shared UI/UX direction for H3 Ink.
 
-The goal is a calm, modern, minimal interface that helps people write, read, and act without visual noise. The system should feel deliberate, quiet, and highly usable. If something does not improve clarity or interaction, it should not be added.
+H3 Ink should feel minimal, calm, and linear. The product should guide the user forward with as little UI as possible. If an element does not improve focus, orientation, or the next action, it should be removed.
 
-The product direction should lean toward a ChatGPT-like simplicity: one obvious path forward, very little ornamental chrome, quiet navigation, and a linear sense of flow from context to action to content.
+The intended feeling is close to ChatGPT at its best: simple, quiet, obvious, and highly readable. The interface should not feel like a dashboard. It should feel like a tool for thought.
 
 ## Core Principles
 
-- Keep the interface restrained. Show only what the user needs right now.
-- Favor strong hierarchy over decoration.
-- Make interaction obvious through motion, spacing, contrast, and state changes.
-- Use monochrome surfaces and neutral grays only.
-- Prefer clear structure over dense UI chrome.
-- Design for focus. Every screen should support a single primary task.
-- Default to the simplest workable layout before adding controls, supporting text, or secondary states.
-- Prefer linear UI over branching UI. The user should feel guided, not presented with many equal choices.
-- Make the product feel calm in the same way ChatGPT feels calm: sparse framing, strong reading order, and very little competing emphasis.
+- Default to the simplest workable layout.
+- Prefer linear UI over branching UI.
+- Show one clear path forward.
+- Use structure, spacing, and typography before using decoration.
+- Keep the shell quieter than the content.
+- Let empty space do real work.
+- Remove copy before removing whitespace.
+- Do not add chrome just because space exists.
 
 ## Visual Language
 
 ### Color
 
-- Use only black, white, and neutral grays.
-- Treat contrast as a functional tool, not a decorative one.
-- Use borders, fills, opacity, and surface elevation to separate layers.
-- Do not introduce accent colors for branding or flavor.
+- The source of truth for color tokens is [packages/ui/src/styles.css](/Users/howardthomas/Desktop/h3ink/packages/ui/src/styles.css).
+- App-level shell backgrounds or surface treatments can be layered in each app's global CSS, but they should still derive from the shared token system.
+- Keep the palette monochrome or near-monochrome.
+- Keep contrast functional and quiet.
+- Avoid accent colors for personality or branding.
+- Use fills, borders, and opacity to separate layers.
+- Treat the docs here as color direction, not as a hardcoded palette definition.
 
 ### Typography
 
-- Use a modern sans-serif for UI and marketing surfaces.
-- Use a monospace face only where file content, code, or technical metadata benefits from it.
-- Keep type scales simple and easy to scan.
-- Prefer short line lengths for reading-heavy content.
-- Use weight and spacing before using size jumps.
+- Use a modern sans-serif for UI surfaces.
+- Use monospace only for note content, code, or technical metadata.
+- Keep type scales tight and simple.
+- Favor weight and spacing over large jumps in size.
+- Make labels calm and understated.
 
 ### Layout
 
-- Build around generous whitespace.
-- Keep the primary action easy to find.
-- Group related controls tightly and separate unrelated areas clearly.
-- Avoid dense toolbar clusters and unnecessary supporting text.
-- Prefer stable layouts that do not shift as the user works.
-- Favor one clear column of decision-making at a time, even inside larger desktop layouts.
-- Let the eye move in a simple order: navigation, active context, main content.
+- Build around stable structure and generous whitespace.
+- Let the eye move in a simple order: navigation, active context, content.
+- Avoid dense toolbar clusters.
+- Avoid multiple surfaces competing equally for attention.
+- Prefer one strong canvas instead of many framed panels.
 
 ### Surfaces
 
-- Use clean panels with subtle borders and low-contrast fills.
+- Use flat or nearly flat surfaces with subtle borders.
 - Keep shadows minimal and functional.
-- Reserve strong contrast for the active editing surface or primary call to action.
-- Avoid visual texture, ornamental gradients, and unnecessary background imagery.
-- Treat empty space as part of the interface, not as something that must be filled.
 - Avoid turning every grouping into a card.
+- Avoid ornamental gradients, textures, and decorative effects.
+- Treat empty space as a feature, not as an unfinished area.
 
 ## Interaction Principles
 
-- Interactions should feel fast and predictable.
-- Hover states should be subtle, not flashy.
-- Focus states must be clearly visible and keyboard-friendly.
-- Active and pressed states should feel immediate.
-- Empty states should guide the next action without overexplaining.
-- Loading states should be calm and brief.
-- Error states should be direct and actionable.
-
-### Motion
-
-- Use motion sparingly.
-- Motion should explain change, not decorate it.
-- Keep transitions short and smooth.
-- Avoid large or distracting animations.
-- Respect reduced-motion preferences.
+- Interactions should feel immediate and predictable.
+- Hover states should be quiet.
+- Focus states must remain visible.
+- Motion should be sparse and short.
+- Empty states should be almost invisible.
+- If an empty state works with a mark, a short label, and a short title, stop there.
+- Avoid “helpful” UI that interrupts the user’s flow.
 
 ## Desktop App Guidelines
 
 ### Product Feel
 
 - The desktop app is the primary product surface.
-- The interface should stay out of the way of writing.
+- The app should feel more like a writing tool than a productivity suite.
 - Keep chrome minimal and predictable.
-- Make the editor the visual center of the experience.
-- Use a calm shell that feels like a native desktop workspace, with soft edges and restrained controls.
-- Prefer neutral light or dark surfaces as long as the system stays monochrome and low-chroma.
-- The shell should feel quieter than most desktop productivity apps.
-- The app should feel more like a writing tool than a dashboard.
-
-### Writing Surface
-
-- Prioritize clarity, readability, and low-friction editing.
-- Keep the split view simple and easy to parse.
-- Make file state, save state, and recent context visible without crowding the canvas.
-- Use a clear monospace editor style.
-- Avoid persistent controls that are not needed while writing.
-
-### Desktop Interaction
-
-- Resizing, opening, saving, and switching files should feel immediate.
-- Recent files should be easy to return to, but never dominate the interface.
-- Autosave and persistence feedback should be quiet and trustworthy.
-- Native file dialogs and filesystem actions should feel familiar and low ceremony.
-- If the screen uses a sidebar shell, keep the primary navigation close to the brand and the editor surface visually open.
-- Use compact, obvious actions for search, new item, and compose-like entry points when they are needed.
+- Make the writing surface the visual center of the experience.
+- The shell should feel native, quiet, and low ceremony.
 
 ### Sidebar Shell
 
-- Treat the sidebar as a navigation rail, not a secondary dashboard.
-- Put brand identity at the top, then a small number of collapsible navigation groups such as `Pinned` and `Recent`.
-- Keep the sidebar extremely sparse. If a section can be represented as a simple text list, do that instead of building cards or rich rows.
+- Treat the sidebar as a quiet outline, not a feature surface.
+- Put brand identity at the top.
+- After branding, show only the smallest useful set of navigation groups.
+- Default to collapsible groups such as `Pinned` and `Recent`.
+- Keep note rows compact.
 - Note rows should usually be just the note title.
-- Use small disclosure controls to expand and collapse groups instead of permanently showing everything.
-- Keep note rows short, compact, and evenly spaced.
-- Reserve filled or tinted pills for the active row only.
-- Avoid per-row metadata unless it is essential to the user’s next decision.
-- Avoid icons on every note row unless they communicate something necessary.
-- Prefer simple section labels, disclosure states, and whitespace over dividers, badges, and containers.
-- Let the sidebar feel stable and fixed while the main canvas remains open and airy.
-- The sidebar should read more like a quiet outline than a feature surface.
+- Avoid per-row metadata unless it changes the user’s next decision.
+- Avoid icons on every note row unless they are necessary.
+- Reserve filled pills for the selected row only.
+- Prefer disclosure, spacing, and typography over cards, badges, and dividers.
+- The sidebar should stay visually lighter than the content area.
 
 ### Top Chrome
 
-- If window controls are visible, keep them small, quiet, and aligned to the top edge.
-- Use a minimal top row for search, add, or compose actions when the product needs them.
-- Keep the top chrome visually lighter than the navigation content.
-- Avoid toolbar density; a few clearly separated controls are better than a crowded cluster.
-- If top chrome does not help the current task, remove it.
+- Use top chrome only when it helps the current task.
+- Keep labels short and quiet.
+- If a control is not helping orientation or action, remove it.
+- Avoid decorative headers and toolbars.
+
+### Writing Surface
+
+- Keep the main content area open and calm.
+- Prioritize readability and low-friction editing.
+- Keep supporting UI out of the way of note content.
+- Use empty states with restraint.
+- Do not let placeholders feel like marketing sections.
 
 ### Desktop UI Boundaries
 
-- Do not overload the shell with menus, badges, or secondary actions.
-- Keep sidebar content compact and scannable.
-- Use labels and spacing to clarify state instead of stacking explanatory text.
-- Let the content area carry the experience, not the chrome.
-- Use large empty space deliberately so the main canvas feels ready for work instead of crowded by layout.
-- Empty states should center their message and mark, keep copy short, and avoid pushing the user toward too many actions.
-- Empty states should feel almost invisible.
-- If an empty state can work with only a mark, a short label, and a short title, prefer that.
-- Remove explanatory copy before removing whitespace.
-- Avoid “helpful” UI that interrupts the linear flow of the product.
+- Do not overload the shell with menus, badges, quick filters, or supporting panels.
+- Do not make the sidebar visually louder than the main canvas.
+- Do not build rich list rows when plain text rows are enough.
+- Do not add explanatory copy where a clear label is enough.
+- Do not make empty states more visually complex than the real feature will be.
 
 ## Web App Guidelines
 
-### Product Role
-
-- The website is a marketing and download surface, not a second app experience.
-- It should communicate the product clearly and honestly.
-- The web experience should mirror the desktop product’s restraint.
-
-### Web Layout
-
-- Lead with a single clear value proposition.
-- Use sections to explain the product, not to prove visual complexity.
-- Keep content blocks concise and purposeful.
-- Avoid overcrowding the page with too many selling points at once.
-
-### Web Interaction
-
-- Calls to action should be obvious and few in number.
-- Navigation should be minimal and scannable.
-- Motion should support emphasis and flow, not compete with the message.
-- Product previews should feel like a real interface, not a gimmick.
+- The website is a marketing and download surface, not a second app.
+- Keep the website aligned with the same calm, restrained visual language.
+- Use concise sections and minimal navigation.
+- Avoid over-designed marketing patterns that do not resemble the product.
 
 ## Accessibility Baseline
 
 - Maintain strong contrast between text and surfaces.
-- Support keyboard navigation across all meaningful controls.
+- Support keyboard navigation for all meaningful controls.
 - Keep focus visible at all times.
 - Avoid relying on color alone to communicate state.
-- Use readable text sizes and line heights.
-- Respect reduced-motion preferences and avoid motion-heavy transitions.
+- Use readable font sizes and line heights.
+- Respect reduced-motion preferences.
 
 ## What To Avoid
 
 - Colorful branding systems.
-- Dense dashboards and information overload.
-- Decorative UI that does not help the task.
-- Competing visual effects.
-- Hidden controls that only appear after trial and error.
-- Walls of explanatory copy.
-- Overbuilt sidebars with large cards, rich metadata, or repeated labels.
-- Empty states that look like marketing sections.
-- Multiple surfaces competing equally for the user’s attention.
+- Dense dashboards.
+- Decorative UI that does not support the task.
+- Large note cards in the sidebar.
+- Rich metadata on every row.
+- Empty states with long explanations.
+- Multiple primary actions on the same screen.
+- Surfaces that compete equally for attention.
 
 ## Design Check
 
 Before shipping a screen, ask:
 
-- Does this help the user focus?
-- Is the primary action obvious?
-- Can I remove any controls, labels, or surfaces without losing clarity?
-- Does the interaction feel calm and immediate?
-- Would this still work if the only colors were black, white, and gray?
-
-If the answer to the last question is no, the design is probably relying on decoration instead of structure.
+- Can this be simpler?
+- Is the next action obvious?
+- Can I remove a label, border, card, or line of copy without losing clarity?
+- Does the screen feel linear rather than branching?
+- Is the content more visually important than the chrome?
+- Would this still feel good if it were only black, white, and gray?
 
 ## References
 
-- When useful, include a small number of screenshots of approved product states so future work has a visual anchor.
-- Use screenshots as examples, not as pixel-perfect rules.
-- Prefer 2-4 curated screenshots of canonical states such as the desktop landing shell, an open note, and a split editor/preview view.
-- Each screenshot should represent a design principle, not just a moment in time.
-- Update screenshots when the product direction changes materially.
+- Yes, screenshots are useful here.
+- Keep them curated and few.
+- Prefer 2-4 approved screenshots of canonical product states.
+- Use them as principle anchors, not pixel-perfect specs.
+- Good candidates are:
+- the minimal desktop landing shell
+- an open note view
+- the future split editor and preview view
