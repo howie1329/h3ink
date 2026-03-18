@@ -195,15 +195,10 @@ function App(): React.JSX.Element {
           </Sidebar>
 
           <SidebarInset className="bg-background/70">
-            <header className="flex items-center justify-between border-b border-border/70 px-4 py-3 md:px-6">
-              <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                  Desktop app
-                </p>
-                <p className="mt-1 text-sm text-foreground/72">
-                  {activeView === 'settings' ? 'Settings' : 'Landing shell'}
-                </p>
-              </div>
+            <header className="flex items-center justify-between border-b border-border/70 px-4 py-2.5 md:px-6">
+              <p className="text-[0.82rem] text-foreground/70">
+                {activeView === 'settings' ? 'Settings' : 'Landing shell'}
+              </p>
               <SidebarTrigger className="text-foreground/78 md:hidden" />
             </header>
 
