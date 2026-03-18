@@ -4,6 +4,8 @@ This document defines the shared UI/UX direction for the desktop app and the web
 
 The goal is a calm, modern, minimal interface that helps people write, read, and act without visual noise. The system should feel deliberate, quiet, and highly usable. If something does not improve clarity or interaction, it should not be added.
 
+The product direction should lean toward a ChatGPT-like simplicity: one obvious path forward, very little ornamental chrome, quiet navigation, and a linear sense of flow from context to action to content.
+
 ## Core Principles
 
 - Keep the interface restrained. Show only what the user needs right now.
@@ -12,6 +14,9 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Use monochrome surfaces and neutral grays only.
 - Prefer clear structure over dense UI chrome.
 - Design for focus. Every screen should support a single primary task.
+- Default to the simplest workable layout before adding controls, supporting text, or secondary states.
+- Prefer linear UI over branching UI. The user should feel guided, not presented with many equal choices.
+- Make the product feel calm in the same way ChatGPT feels calm: sparse framing, strong reading order, and very little competing emphasis.
 
 ## Visual Language
 
@@ -37,6 +42,8 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Group related controls tightly and separate unrelated areas clearly.
 - Avoid dense toolbar clusters and unnecessary supporting text.
 - Prefer stable layouts that do not shift as the user works.
+- Favor one clear column of decision-making at a time, even inside larger desktop layouts.
+- Let the eye move in a simple order: navigation, active context, main content.
 
 ### Surfaces
 
@@ -44,6 +51,8 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Keep shadows minimal and functional.
 - Reserve strong contrast for the active editing surface or primary call to action.
 - Avoid visual texture, ornamental gradients, and unnecessary background imagery.
+- Treat empty space as part of the interface, not as something that must be filled.
+- Avoid turning every grouping into a card.
 
 ## Interaction Principles
 
@@ -73,6 +82,8 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Make the editor the visual center of the experience.
 - Use a calm shell that feels like a native desktop workspace, with soft edges and restrained controls.
 - Prefer neutral light or dark surfaces as long as the system stays monochrome and low-chroma.
+- The shell should feel quieter than most desktop productivity apps.
+- The app should feel more like a writing tool than a dashboard.
 
 ### Writing Surface
 
@@ -94,14 +105,17 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 ### Sidebar Shell
 
 - Treat the sidebar as a navigation rail, not a secondary dashboard.
-- Put brand identity at the top, then the most important navigation group, then optional recent or pinned items.
-- Keep sidebar rows tall enough to scan quickly, but narrow enough to feel compact.
-- Use left-aligned icon and label pairs with generous whitespace between rows.
+- Put brand identity at the top, then a small number of collapsible navigation groups such as `Pinned` and `Recent`.
+- Keep the sidebar extremely sparse. If a section can be represented as a simple text list, do that instead of building cards or rich rows.
+- Note rows should usually be just the note title.
+- Use small disclosure controls to expand and collapse groups instead of permanently showing everything.
+- Keep note rows short, compact, and evenly spaced.
 - Reserve filled or tinted pills for the active row only.
-- Use small neutral badges for counts or status; keep them unobtrusive and rare.
-- Keep secondary metadata quieter than the primary label.
-- Prefer simple dividers and section labels over heavy card chrome.
+- Avoid per-row metadata unless it is essential to the user’s next decision.
+- Avoid icons on every note row unless they communicate something necessary.
+- Prefer simple section labels, disclosure states, and whitespace over dividers, badges, and containers.
 - Let the sidebar feel stable and fixed while the main canvas remains open and airy.
+- The sidebar should read more like a quiet outline than a feature surface.
 
 ### Top Chrome
 
@@ -109,6 +123,7 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Use a minimal top row for search, add, or compose actions when the product needs them.
 - Keep the top chrome visually lighter than the navigation content.
 - Avoid toolbar density; a few clearly separated controls are better than a crowded cluster.
+- If top chrome does not help the current task, remove it.
 
 ### Desktop UI Boundaries
 
@@ -118,6 +133,10 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Let the content area carry the experience, not the chrome.
 - Use large empty space deliberately so the main canvas feels ready for work instead of crowded by layout.
 - Empty states should center their message and mark, keep copy short, and avoid pushing the user toward too many actions.
+- Empty states should feel almost invisible.
+- If an empty state can work with only a mark, a short label, and a short title, prefer that.
+- Remove explanatory copy before removing whitespace.
+- Avoid “helpful” UI that interrupts the linear flow of the product.
 
 ## Web App Guidelines
 
@@ -158,6 +177,9 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Competing visual effects.
 - Hidden controls that only appear after trial and error.
 - Walls of explanatory copy.
+- Overbuilt sidebars with large cards, rich metadata, or repeated labels.
+- Empty states that look like marketing sections.
+- Multiple surfaces competing equally for the user’s attention.
 
 ## Design Check
 
@@ -170,3 +192,11 @@ Before shipping a screen, ask:
 - Would this still work if the only colors were black, white, and gray?
 
 If the answer to the last question is no, the design is probably relying on decoration instead of structure.
+
+## References
+
+- When useful, include a small number of screenshots of approved product states so future work has a visual anchor.
+- Use screenshots as examples, not as pixel-perfect rules.
+- Prefer 2-4 curated screenshots of canonical states such as the desktop landing shell, an open note, and a split editor/preview view.
+- Each screenshot should represent a design principle, not just a moment in time.
+- Update screenshots when the product direction changes materially.
