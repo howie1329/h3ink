@@ -30,6 +30,8 @@ const pinnedNotes = ['Welcome to H3 Ink']
 
 const recentNotes = ['Launch checklist', 'Markdown ideas', 'Release notes', 'Writing cues']
 
+type AppView = 'notes' | 'settings'
+
 function SectionToggle({
   title,
   open,
@@ -64,6 +66,7 @@ function App(): React.JSX.Element {
   const [isDark, setIsDark] = useState(true)
   const [pinnedOpen, setPinnedOpen] = useState(true)
   const [recentOpen, setRecentOpen] = useState(true)
+  const [activeView, setActiveView] = useState<AppView>('notes')
 
   return (
     <div className={cn('min-h-[100dvh] bg-transparent text-foreground', isDark && 'dark')}>
@@ -76,6 +79,7 @@ function App(): React.JSX.Element {
             <SidebarHeader className="gap-3 px-4 pb-3 pt-4">
               <Button
                 type="button"
+                onClick={() => setActiveView('notes')}
                 variant="ghost"
                 size="compact"
                 className="h-9 w-full justify-start gap-2.5 px-2.5"
@@ -95,6 +99,7 @@ function App(): React.JSX.Element {
                 <SidebarGroupContent>
                   <Button
                     type="button"
+                    onClick={() => setActiveView('notes')}
                     variant="ghost"
                     size="compact"
                     className="mb-3 w-full justify-start gap-2 text-foreground/78 hover:text-foreground"
@@ -115,6 +120,7 @@ function App(): React.JSX.Element {
                         <SidebarMenuItem key={note}>
                           <SidebarMenuButton
                             isActive={note === 'Welcome to H3 Ink'}
+                            onClick={() => setActiveView('notes')}
                             size="compact"
                             className="font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-foreground"
                           >
@@ -137,6 +143,7 @@ function App(): React.JSX.Element {
                         {recentNotes.map((note) => (
                           <SidebarMenuItem key={note}>
                             <SidebarMenuButton
+                              onClick={() => setActiveView('notes')}
                               size="compact"
                               className="font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                             >
@@ -154,9 +161,13 @@ function App(): React.JSX.Element {
             <SidebarFooter className="mt-auto px-4 pb-4 pt-2">
               <Button
                 type="button"
+                onClick={() => setActiveView('settings')}
                 variant="ghost"
                 size="compact"
-                className="mb-1 w-full justify-start gap-2.5 text-muted-foreground hover:text-foreground"
+                className={cn(
+                  'mb-1 w-full justify-start gap-2.5 hover:text-foreground',
+                  activeView === 'settings' ? 'bg-accent text-foreground' : 'text-muted-foreground'
+                )}
               >
                 <HugeiconsIcon
                   icon={Settings02Icon}
@@ -189,25 +200,47 @@ function App(): React.JSX.Element {
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Desktop app
                 </p>
-                <p className="mt-1 text-sm text-foreground/72">Landing shell</p>
+                <p className="mt-1 text-sm text-foreground/72">
+                  {activeView === 'settings' ? 'Settings' : 'Landing shell'}
+                </p>
               </div>
               <SidebarTrigger className="text-foreground/78 md:hidden" />
             </header>
 
             <div className="flex flex-1 items-center justify-center px-6 py-10">
-              <div className="flex flex-col items-center justify-center gap-5 text-center">
-                <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
-                  <img src={appLogo} alt="H3 Ink mark" className="size-10 object-contain" />
+              {activeView === 'settings' ? (
+                <div className="flex flex-col items-center justify-center gap-5 text-center">
+                  <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
+                    <HugeiconsIcon
+                      icon={Settings02Icon}
+                      className="size-8 text-muted-foreground"
+                      strokeWidth={1.7}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                      Coming soon
+                    </p>
+                    <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
+                      Settings
+                    </h2>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                    Coming soon
-                  </p>
-                  <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
-                    Writing surface
-                  </h2>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-5 text-center">
+                  <div className="flex size-18 items-center justify-center rounded-2xl border border-border bg-card/40">
+                    <img src={appLogo} alt="H3 Ink mark" className="size-10 object-contain" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                      Coming soon
+                    </p>
+                    <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground/88 md:text-3xl">
+                      Writing surface
+                    </h2>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </SidebarInset>
         </div>
