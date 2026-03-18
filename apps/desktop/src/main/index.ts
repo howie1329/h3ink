@@ -6,6 +6,7 @@ import {
   createDesktopNote,
   ensureDefaultNotesDirectory,
   getLaunchState,
+  listDesktopNotes,
   listRecentFiles,
   openMarkdownFile,
   openRecentFile,
@@ -61,6 +62,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('file-gateway:ensureDefaultNotesDirectory', () => ensureDefaultNotesDirectory())
+  ipcMain.handle('file-gateway:listDesktopNotes', () => listDesktopNotes())
   ipcMain.handle('file-gateway:createDesktopNote', (_, input) => createDesktopNote(input))
   ipcMain.handle('file-gateway:openMarkdownFile', () => openMarkdownFile())
   ipcMain.handle('file-gateway:openRecentFile', (_, input) => openRecentFile(input))

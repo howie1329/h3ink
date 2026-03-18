@@ -34,6 +34,7 @@ export type H3LaunchState = {
 
 export interface FileGateway {
   ensureDefaultNotesDirectory: () => Promise<{ path: string }>
+  listDesktopNotes: () => Promise<H3RecentFile[]>
   createDesktopNote: (input: {
     content: string
     suggestedTitle?: string

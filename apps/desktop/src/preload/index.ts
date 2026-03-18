@@ -5,6 +5,7 @@ import type { FileGateway } from '../shared/file-gateway'
 // Custom APIs for renderer
 const api: FileGateway = {
   ensureDefaultNotesDirectory: () => ipcRenderer.invoke('file-gateway:ensureDefaultNotesDirectory'),
+  listDesktopNotes: () => ipcRenderer.invoke('file-gateway:listDesktopNotes'),
   createDesktopNote: (input) => ipcRenderer.invoke('file-gateway:createDesktopNote', input),
   openMarkdownFile: () => ipcRenderer.invoke('file-gateway:openMarkdownFile'),
   openRecentFile: (input) => ipcRenderer.invoke('file-gateway:openRecentFile', input),

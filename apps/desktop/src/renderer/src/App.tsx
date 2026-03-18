@@ -1,11 +1,14 @@
 import {
   Add01Icon,
+  ArrowDown01Icon,
+  ArrowRight01Icon,
   FolderOpenIcon,
   SaveIcon,
   SaveEnergy01Icon
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import appLogo from '../../../resources/icon-light.png'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,
@@ -22,10 +25,39 @@ import {
 } from '@/components/ui/sidebar'
 import { useDocumentSession } from '@/hooks/use-document-session'
 
+function SidebarSectionToggle({
+  title,
+  open,
+  onToggle
+}: {
+  title: string
+  open: boolean
+  onToggle: () => void
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center gap-2 px-3 pt-3 text-left text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground/80"
+    >
+      <HugeiconsIcon
+        icon={open ? ArrowDown01Icon : ArrowRight01Icon}
+        className="size-3 shrink-0"
+        strokeWidth={2}
+      />
+      <span>{title}</span>
+    </button>
+  )
+}
+
 function App(): React.JSX.Element {
+  const [pinnedOpen, setPinnedOpen] = useState(true)
+  const [notesOpen, setNotesOpen] = useState(true)
+  const [recentOpen, setRecentOpen] = useState(true)
   const {
     document,
     recentFiles,
+    desktopNotes,
     defaultNotesPath,
     ready,
     errorMessage,
@@ -77,36 +109,90 @@ function App(): React.JSX.Element {
                     <HugeiconsIcon icon={Add01Icon} className="size-4 shrink-0" strokeWidth={1.8} />
                     <span>New Note</span>
                   </Button>
-                  <p className="px-3 pt-3 text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                    Recent Files
-                  </p>
-                  <SidebarMenu className="mt-2 gap-0">
-                    {recentFiles.length === 0 ? (
+                  <SidebarSectionToggle
+                    title="Pinned"
+                    open={pinnedOpen}
+                    onToggle={() => setPinnedOpen((current) => !current)}
+                  />
+                  {pinnedOpen ? (
+                    <SidebarMenu className="mt-2 gap-0">
                       <SidebarMenuItem>
                         <div className="px-3 py-2 text-sm text-muted-foreground">
-                          No saved notes yet.
+                          No pinned notes yet.
                         </div>
                       </SidebarMenuItem>
-                    ) : (
-                      recentFiles.map((note) => (
-                        <SidebarMenuItem key={note.path}>
-                          <SidebarMenuButton
-                            isActive={document.filePath === note.path}
-                            onClick={() => void loadRecentFile(note.path)}
-                            size="compact"
-                            className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
-                          >
-                            <div className="min-w-0">
-                              <div className="truncate">{note.title}</div>
-                              <div className="truncate text-[0.72rem] text-muted-foreground">
-                                {note.path}
-                              </div>
-                            </div>
-                          </SidebarMenuButton>
+                    </SidebarMenu>
+                  ) : null}
+
+                  <SidebarSectionToggle
+                    title="Notes"
+                    open={notesOpen}
+                    onToggle={() => setNotesOpen((current) => !current)}
+                  />
+                  {notesOpen ? (
+                    <SidebarMenu className="mt-2 gap-0">
+                      {desktopNotes.length === 0 ? (
+                        <SidebarMenuItem>
+                          <div className="px-3 py-2 text-sm text-muted-foreground">
+                            No notes in h3inknotes yet.
+                          </div>
                         </SidebarMenuItem>
-                      ))
-                    )}
-                  </SidebarMenu>
+                      ) : (
+                        desktopNotes.map((note) => (
+                          <SidebarMenuItem key={note.path}>
+                            <SidebarMenuButton
+                              isActive={document.filePath === note.path}
+                              onClick={() => void loadRecentFile(note.path)}
+                              size="compact"
+                              className="h-auto min-h-8 items-start py-2 font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
+                            >
+                              <div className="min-w-0">
+                                <div className="truncate">{note.title}</div>
+                                <div className="truncate text-[0.72rem] text-muted-foreground">
+                                  {note.path}
+                                </div>
+                              </div>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))
+                      )}
+                    </SidebarMenu>
+                  ) : null}
+
+                  <SidebarSectionToggle
+                    title="Recent Files"
+                    open={recentOpen}
+                    onToggle={() => setRecentOpen((current) => !current)}
+                  />
+                  {recentOpen ? (
+                    <SidebarMenu className="mt-2 gap-0">
+                      {recentFiles.length === 0 ? (
+                        <SidebarMenuItem>
+                          <div className="px-3 py-2 text-sm text-muted-foreground">
+                            No saved notes yet.
+                          </div>
+                        </SidebarMenuItem>
+                      ) : (
+                        recentFiles.map((note) => (
+                          <SidebarMenuItem key={note.path}>
+                            <SidebarMenuButton
+                              isActive={document.filePath === note.path}
+                              onClick={() => void loadRecentFile(note.path)}
+                              size="compact"
+                              className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
+                            >
+                              <div className="min-w-0">
+                                <div className="truncate">{note.title}</div>
+                                <div className="truncate text-[0.72rem] text-muted-foreground">
+                                  {note.path}
+                                </div>
+                              </div>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))
+                      )}
+                    </SidebarMenu>
+                  ) : null}
                 </SidebarGroupContent>
               </SidebarGroup>
             </SidebarContent>

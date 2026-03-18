@@ -76,6 +76,7 @@ function isMissingRecentFile(
 export function useDocumentSession() {
   const [document, setDocument] = useState<DocumentState>(createEmptyDocument)
   const [recentFiles, setRecentFiles] = useState<H3RecentFile[]>([])
+  const [desktopNotes, setDesktopNotes] = useState<H3RecentFile[]>([])
   const [defaultNotesPath, setDefaultNotesPath] = useState('')
   const [ready, setReady] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -89,6 +90,11 @@ export function useDocumentSession() {
   const refreshRecents = useCallback(async (): Promise<void> => {
     const files = await window.api.listRecentFiles()
     setRecentFiles(files)
+  }, [])
+
+  const refreshDesktopNotes = useCallback(async (): Promise<void> => {
+    const files = await window.api.listDesktopNotes()
+    setDesktopNotes(files)
   }, [])
 
   const applyDocument = useCallback(
@@ -117,17 +123,19 @@ export function useDocumentSession() {
           setDocument(createEmptyDocument())
           await window.api.setLastActiveFilePath({ path: null })
           await refreshRecents()
+          await refreshDesktopNotes()
           return
         }
 
         const document = result
         applyDocument(document)
         await refreshRecents()
+        await refreshDesktopNotes()
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
       }
     },
-    [applyDocument, refreshRecents]
+    [applyDocument, refreshDesktopNotes, refreshRecents]
   )
 
   useEffect(() => {
@@ -142,6 +150,7 @@ export function useDocumentSession() {
 
         setDefaultNotesPath(launchState.defaultNotesPath)
         setRecentFiles(launchState.recentFiles)
+        setDesktopNotes(await window.api.listDesktopNotes())
 
         if (launchState.lastActiveFilePath) {
           const result = await window.api.openRecentFile({ path: launchState.lastActiveFilePath })
@@ -154,6 +163,7 @@ export function useDocumentSession() {
             setDocument(createEmptyDocument())
             setErrorMessage('Your last active file is missing. Starting with an empty draft.')
             setRecentFiles(await window.api.listRecentFiles())
+            setDesktopNotes(await window.api.listDesktopNotes())
           } else {
             const document = result
             setDocument({
@@ -242,6 +252,7 @@ export function useDocumentSession() {
         }
 
         await refreshRecents()
+        await refreshDesktopNotes()
       } catch (error) {
         setDocument((current) => ({ ...current, saveStatus: 'error' }))
         setErrorMessage(
@@ -255,7 +266,7 @@ export function useDocumentSession() {
         saveInFlightRef.current = false
       }
     },
-    [defaultNotesPath, document.filePath, document.title, refreshRecents]
+    [defaultNotesPath, document.filePath, document.title, refreshDesktopNotes, refreshRecents]
   )
 
   useEffect(() => {
@@ -299,10 +310,11 @@ export function useDocumentSession() {
 
       applyDocument(result)
       await refreshRecents()
+      await refreshDesktopNotes()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
     }
-  }, [applyDocument, refreshRecents])
+  }, [applyDocument, refreshDesktopNotes, refreshRecents])
 
   const saveNow = useCallback(async (): Promise<void> => {
     await saveDocument('manual')
@@ -331,11 +343,12 @@ export function useDocumentSession() {
       }))
       setErrorMessage(null)
       await refreshRecents()
+      await refreshDesktopNotes()
     } catch (error) {
       setDocument((current) => ({ ...current, saveStatus: 'error' }))
       setErrorMessage(error instanceof Error ? error.message : 'Save As failed.')
     }
-  }, [defaultNotesPath, document.filePath, document.title, refreshRecents])
+  }, [defaultNotesPath, document.filePath, document.title, refreshDesktopNotes, refreshRecents])
 
   const saveLabel = useMemo(() => {
     if (!document.filePath) {
@@ -360,6 +373,7 @@ export function useDocumentSession() {
   return {
     document,
     recentFiles,
+    desktopNotes,
     defaultNotesPath,
     ready,
     errorMessage,

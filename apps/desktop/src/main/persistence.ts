@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { access, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import { constants as fsConstants } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { app, dialog, BrowserWindow } from 'electron'
@@ -208,6 +208,29 @@ export async function ensureDefaultNotesDirectory(): Promise<{ path: string }> {
   const path = getDefaultNotesPath()
   await mkdir(path, { recursive: true })
   return { path }
+}
+
+export async function listDesktopNotes(): Promise<H3RecentFile[]> {
+  const { path: defaultNotesPath } = await ensureDefaultNotesDirectory()
+  const entries = await readdir(defaultNotesPath)
+  const markdownEntries = entries.filter((entry) => extname(entry).toLowerCase() === MARKDOWN_EXTENSION)
+
+  const notes = await Promise.all(
+    markdownEntries.map(async (entry) => {
+      const path = join(defaultNotesPath, entry)
+      const metadata = await stat(path)
+
+      return {
+        path,
+        title: titleFromPath(path),
+        lastOpenedAt: metadata.mtime.toISOString()
+      }
+    })
+  )
+
+  notes.sort((left, right) => right.lastOpenedAt.localeCompare(left.lastOpenedAt))
+
+  return notes
 }
 
 async function readMarkdownDocument(path: string): Promise<H3MarkdownDocument> {
