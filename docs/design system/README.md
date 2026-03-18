@@ -71,6 +71,8 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - The interface should stay out of the way of writing.
 - Keep chrome minimal and predictable.
 - Make the editor the visual center of the experience.
+- Use a calm shell that feels like a native desktop workspace, with soft edges and restrained controls.
+- Prefer neutral light or dark surfaces as long as the system stays monochrome and low-chroma.
 
 ### Writing Surface
 
@@ -86,6 +88,27 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Recent files should be easy to return to, but never dominate the interface.
 - Autosave and persistence feedback should be quiet and trustworthy.
 - Native file dialogs and filesystem actions should feel familiar and low ceremony.
+- If the screen uses a sidebar shell, keep the primary navigation close to the brand and the editor surface visually open.
+- Use compact, obvious actions for search, new item, and compose-like entry points when they are needed.
+
+### Sidebar Shell
+
+- Treat the sidebar as a navigation rail, not a secondary dashboard.
+- Put brand identity at the top, then the most important navigation group, then optional recent or pinned items.
+- Keep sidebar rows tall enough to scan quickly, but narrow enough to feel compact.
+- Use left-aligned icon and label pairs with generous whitespace between rows.
+- Reserve filled or tinted pills for the active row only.
+- Use small neutral badges for counts or status; keep them unobtrusive and rare.
+- Keep secondary metadata quieter than the primary label.
+- Prefer simple dividers and section labels over heavy card chrome.
+- Let the sidebar feel stable and fixed while the main canvas remains open and airy.
+
+### Top Chrome
+
+- If window controls are visible, keep them small, quiet, and aligned to the top edge.
+- Use a minimal top row for search, add, or compose actions when the product needs them.
+- Keep the top chrome visually lighter than the navigation content.
+- Avoid toolbar density; a few clearly separated controls are better than a crowded cluster.
 
 ### Desktop UI Boundaries
 
@@ -93,6 +116,8 @@ The goal is a calm, modern, minimal interface that helps people write, read, and
 - Keep sidebar content compact and scannable.
 - Use labels and spacing to clarify state instead of stacking explanatory text.
 - Let the content area carry the experience, not the chrome.
+- Use large empty space deliberately so the main canvas feels ready for work instead of crowded by layout.
+- Empty states should center their message and mark, keep copy short, and avoid pushing the user toward too many actions.
 
 ## Web App Guidelines
 
