@@ -46,7 +46,7 @@ function SectionToggle({
       type="button"
       onClick={onToggle}
       className={cn(
-        'flex w-full items-center gap-2 px-3 py-2 text-left text-[0.72rem] font-semibold uppercase tracking-[0.2em] transition-colors',
+        'flex w-full items-center gap-2 px-3 py-2 text-left text-[0.82rem] tracking-[0.2em] transition-colors',
         isDark ? 'text-white/42 hover:text-white/62' : 'text-black/38 hover:text-black/58'
       )}
     >
