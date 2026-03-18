@@ -9,6 +9,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useState } from 'react'
 import appLogo from '../../../resources/icon-light.png'
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -73,9 +74,11 @@ function App(): React.JSX.Element {
             className="border-r border-sidebar-border/70 bg-sidebar/95 backdrop-blur-xl"
           >
             <SidebarHeader className="gap-3 px-4 pb-3 pt-4">
-              <button
+              <Button
                 type="button"
-                className="flex h-10 w-full items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors hover:bg-accent/50"
+                variant="ghost"
+                size="compact"
+                className="h-9 w-full justify-start gap-2.5 px-2.5"
               >
                 <img src={appLogo} alt="H3 Ink logo" className="size-7 rounded-lg object-cover" />
                 <div className="min-w-0">
@@ -84,19 +87,21 @@ function App(): React.JSX.Element {
                   </p>
                   <p className="mt-0.5 text-[0.92rem] text-foreground/80">Notes</p>
                 </div>
-              </button>
+              </Button>
             </SidebarHeader>
 
             <SidebarContent className="px-2 py-2">
               <SidebarGroup>
                 <SidebarGroupContent>
-                  <button
+                  <Button
                     type="button"
-                    className="mb-3 flex h-8 w-full items-center gap-2 rounded-lg px-3 text-[0.82rem] text-foreground/78 transition-colors hover:bg-accent/50 hover:text-foreground"
+                    variant="ghost"
+                    size="compact"
+                    className="mb-3 w-full justify-start gap-2 text-foreground/78 hover:text-foreground"
                   >
                     <HugeiconsIcon icon={Add01Icon} className="size-4 shrink-0" strokeWidth={1.8} />
                     <span>New Note</span>
-                  </button>
+                  </Button>
 
                   <SectionToggle
                     title="Pinned"
@@ -110,7 +115,8 @@ function App(): React.JSX.Element {
                         <SidebarMenuItem key={note}>
                           <SidebarMenuButton
                             isActive={note === 'Welcome to H3 Ink'}
-                            className="h-7 rounded-lg px-5 text-[0.82rem] font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-foreground"
+                            size="compact"
+                            className="font-normal text-foreground/78 hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-foreground"
                           >
                             <span className="truncate">{note}</span>
                           </SidebarMenuButton>
@@ -130,7 +136,10 @@ function App(): React.JSX.Element {
                       <SidebarMenu className="mt-1 gap-0.5">
                         {recentNotes.map((note) => (
                           <SidebarMenuItem key={note}>
-                            <SidebarMenuButton className="h-7 rounded-lg px-5 text-[0.82rem] font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground">
+                            <SidebarMenuButton
+                              size="compact"
+                              className="font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                            >
                               <span className="truncate">{note}</span>
                             </SidebarMenuButton>
                           </SidebarMenuItem>
@@ -143,9 +152,11 @@ function App(): React.JSX.Element {
             </SidebarContent>
 
             <SidebarFooter className="mt-auto px-4 pb-4 pt-2">
-              <button
+              <Button
                 type="button"
-                className="mb-1 flex h-8 w-full items-center gap-2.5 rounded-lg px-3 text-[0.82rem] text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                variant="ghost"
+                size="compact"
+                className="mb-1 w-full justify-start gap-2.5 text-muted-foreground hover:text-foreground"
               >
                 <HugeiconsIcon
                   icon={Settings02Icon}
@@ -153,12 +164,14 @@ function App(): React.JSX.Element {
                   strokeWidth={1.8}
                 />
                 <span>Settings</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsDark((current) => !current)}
-                className="flex h-8 w-full items-center gap-2.5 rounded-lg px-3 text-[0.82rem] text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                variant="ghost"
+                size="compact"
+                className="w-full justify-start gap-2.5 text-muted-foreground hover:text-foreground"
               >
                 <HugeiconsIcon
                   icon={isDark ? Sun03Icon : Moon02Icon}
@@ -166,7 +179,7 @@ function App(): React.JSX.Element {
                   strokeWidth={1.8}
                 />
                 <span>{isDark ? 'Light mode' : 'Dark mode'}</span>
-              </button>
+              </Button>
             </SidebarFooter>
           </Sidebar>
 

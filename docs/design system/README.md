@@ -34,6 +34,7 @@ The intended feeling is close to ChatGPT at its best: simple, quiet, obvious, an
 - Use a modern sans-serif for UI surfaces.
 - Use monospace only for note content, code, or technical metadata.
 - Keep type scales tight and simple.
+- Default UI button and list-row text to `text-[0.82rem]` when possible.
 - Favor weight and spacing over large jumps in size.
 - Make labels calm and understated.
 
