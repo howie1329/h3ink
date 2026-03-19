@@ -1,10 +1,8 @@
-import type { JSONContent } from '@tiptap/core'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useEffect } from 'react'
 import { h3InkEditorExtensions } from '@/lib/tiptap'
 
 export type EditorSnapshot = {
-  json: JSONContent
   markdown: string
 }
 
@@ -16,7 +14,6 @@ type MarkdownEditorProps = {
 
 function createSnapshot(editor: NonNullable<ReturnType<typeof useEditor>>): EditorSnapshot {
   return {
-    json: editor.getJSON(),
     markdown: editor.getMarkdown()
   }
 }

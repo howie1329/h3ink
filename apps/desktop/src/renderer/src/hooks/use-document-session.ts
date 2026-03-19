@@ -1,31 +1,55 @@
-import type { JSONContent } from '@tiptap/core'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import type {
   H3MarkdownDocument,
   H3MissingRecentFile,
   H3RecentFile
 } from '../../../shared/file-gateway'
+import {
+  AUTOSAVE_DELAY_MS,
+  createEmptyDocument,
+  createLoadedDocument,
+  deriveSuggestedTitle,
+  fileNameFromPath,
+  getSaveLabel,
+  inferOrigin,
+  type DocumentState
+} from '@/lib/document-session'
 
 type SaveIntent = 'manual' | 'autosave'
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
-type DocumentOrigin = 'draft' | 'desktop' | 'external'
-
-type DocumentState = {
-  content: string
-  editorContent: JSONContent | null
-  filePath: string | null
-  title: string
-  isDirty: boolean
-  saveStatus: SaveStatus
-  origin: DocumentOrigin
-  lastSavedAt: string | null
-  sessionKey: number
-}
 
 type EditorSnapshot = {
   markdown: string
-  json: JSONContent
 }
+
+type SessionState = {
+  document: DocumentState
+  recentFiles: H3RecentFile[]
+  defaultNotesPath: string
+  ready: boolean
+  errorMessage: string | null
+}
+
+type SessionAction =
+  | { type: 'launchLoaded'; defaultNotesPath: string; recentFiles: H3RecentFile[] }
+  | { type: 'setReady' }
+  | { type: 'setRecentFiles'; recentFiles: H3RecentFile[] }
+  | { type: 'loadDocument'; document: H3MarkdownDocument; defaultNotesPath: string }
+  | { type: 'resetDraft' }
+  | { type: 'hydrateEditor'; markdown: string }
+  | { type: 'updateContent'; markdown: string }
+  | { type: 'markSaving' }
+  | { type: 'cancelSaving' }
+  | { type: 'markSaved'; savedAt: string; savedContent: string }
+  | {
+      type: 'saveAsSucceeded'
+      path: string
+      title: string
+      savedAt: string
+      savedContent: string
+      defaultNotesPath: string
+    }
+  | { type: 'setError'; message: string | null }
+  | { type: 'markError'; message: string }
 
 type UseDocumentSessionResult = {
   document: DocumentState
@@ -41,57 +65,15 @@ type UseDocumentSessionResult = {
   loadRecentFile: (path: string) => Promise<boolean>
   saveNow: () => Promise<void>
   saveAs: () => Promise<void>
-  deleteCurrentNote: () => Promise<void>
+  deleteCurrentNote: () => Promise<boolean>
 }
 
-const EMPTY_TITLE = 'Untitled'
-const AUTOSAVE_DELAY_MS = 700
-const UNTITLED_FILE_PREFIX = 'untitled'
-
-function createEmptyDocument(): DocumentState {
-  return {
-    content: '',
-    editorContent: null,
-    filePath: null,
-    title: EMPTY_TITLE,
-    isDirty: false,
-    saveStatus: 'idle',
-    origin: 'draft',
-    lastSavedAt: null,
-    sessionKey: Date.now()
-  }
-}
-
-function inferOrigin(filePath: string, defaultNotesPath: string): DocumentOrigin {
-  return filePath.startsWith(defaultNotesPath) ? 'desktop' : 'external'
-}
-
-function deriveSuggestedTitle(content: string, currentTitle: string): string {
-  const lines = content
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-
-  const heading = lines.find((line) => line.startsWith('#'))
-  if (heading) {
-    return heading.replace(/^#+\s*/, '').trim() || currentTitle || EMPTY_TITLE
-  }
-
-  if (lines[0]) {
-    return lines[0]
-  }
-
-  return currentTitle || EMPTY_TITLE
-}
-
-function fileNameFromPath(path: string | null): string {
-  if (!path) {
-    return UNTITLED_FILE_PREFIX
-  }
-
-  const segments = path.split(/[\\/]/)
-  const fileName = segments[segments.length - 1] || UNTITLED_FILE_PREFIX
-  return fileName.replace(/\.md$/i, '') || UNTITLED_FILE_PREFIX
+const initialState: SessionState = {
+  document: createEmptyDocument(),
+  recentFiles: [],
+  defaultNotesPath: '',
+  ready: false,
+  errorMessage: null
 }
 
 function isMissingRecentFile(
@@ -100,41 +82,137 @@ function isMissingRecentFile(
   return 'missing' in result
 }
 
+function sessionReducer(state: SessionState, action: SessionAction): SessionState {
+  switch (action.type) {
+    case 'launchLoaded':
+      return {
+        ...state,
+        defaultNotesPath: action.defaultNotesPath,
+        recentFiles: action.recentFiles
+      }
+    case 'setReady':
+      return {
+        ...state,
+        ready: true
+      }
+    case 'setRecentFiles':
+      return {
+        ...state,
+        recentFiles: action.recentFiles
+      }
+    case 'loadDocument':
+      return {
+        ...state,
+        document: createLoadedDocument(action.document, action.defaultNotesPath),
+        errorMessage: null
+      }
+    case 'resetDraft':
+      return {
+        ...state,
+        document: createEmptyDocument(),
+        errorMessage: null
+      }
+    case 'hydrateEditor':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          content: action.markdown,
+          title: state.document.filePath
+            ? state.document.title
+            : deriveSuggestedTitle(action.markdown, state.document.title)
+        }
+      }
+    case 'updateContent':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          content: action.markdown,
+          title: state.document.filePath
+            ? state.document.title
+            : deriveSuggestedTitle(action.markdown, state.document.title),
+          isDirty: true,
+          saveStatus: state.document.saveStatus === 'error' ? 'error' : 'idle'
+        }
+      }
+    case 'markSaving':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          saveStatus: 'saving'
+        },
+        errorMessage: null
+      }
+    case 'cancelSaving':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          saveStatus: state.document.isDirty
+            ? 'idle'
+            : state.document.saveStatus === 'error'
+              ? 'error'
+              : 'idle'
+        }
+      }
+    case 'markSaved':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          isDirty: state.document.content !== action.savedContent,
+          saveStatus: 'saved',
+          lastSavedAt: action.savedAt
+        }
+      }
+    case 'saveAsSucceeded':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          filePath: action.path,
+          title: action.title,
+          isDirty: state.document.content !== action.savedContent,
+          saveStatus: 'saved',
+          origin: inferOrigin(action.path, action.defaultNotesPath),
+          lastSavedAt: action.savedAt
+        },
+        errorMessage: null
+      }
+    case 'setError':
+      return {
+        ...state,
+        errorMessage: action.message
+      }
+    case 'markError':
+      return {
+        ...state,
+        document: {
+          ...state.document,
+          saveStatus: 'error'
+        },
+        errorMessage: action.message
+      }
+    default:
+      return state
+  }
+}
+
 export function useDocumentSession(): UseDocumentSessionResult {
-  const [document, setDocument] = useState<DocumentState>(createEmptyDocument)
-  const [recentFiles, setRecentFiles] = useState<H3RecentFile[]>([])
-  const [defaultNotesPath, setDefaultNotesPath] = useState('')
-  const [ready, setReady] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [state, dispatch] = useReducer(sessionReducer, initialState)
   const saveInFlightRef = useRef(false)
-  const contentRef = useRef(document.content)
+  const documentRef = useRef(state.document)
 
   useEffect(() => {
-    contentRef.current = document.content
-  }, [document.content])
+    documentRef.current = state.document
+  }, [state.document])
 
   const refreshRecents = useCallback(async (): Promise<void> => {
     const files = await window.api.listRecentFiles()
-    setRecentFiles(files)
+    dispatch({ type: 'setRecentFiles', recentFiles: files })
   }, [])
-
-  const applyDocument = useCallback(
-    (nextDocument: H3MarkdownDocument): void => {
-      setDocument({
-        content: nextDocument.content,
-        editorContent: null,
-        filePath: nextDocument.path,
-        title: nextDocument.title,
-        isDirty: false,
-        saveStatus: 'saved',
-        origin: inferOrigin(nextDocument.path, defaultNotesPath),
-        lastSavedAt: new Date().toISOString(),
-        sessionKey: Date.now()
-      })
-      setErrorMessage(null)
-    },
-    [defaultNotesPath]
-  )
 
   const loadRecentFile = useCallback(
     async (path: string): Promise<boolean> => {
@@ -142,22 +220,29 @@ export function useDocumentSession(): UseDocumentSessionResult {
         const result = await window.api.openRecentFile({ path })
 
         if (isMissingRecentFile(result)) {
-          setErrorMessage('That recent file could not be found.')
-          setDocument(createEmptyDocument())
+          dispatch({ type: 'resetDraft' })
+          dispatch({ type: 'setError', message: 'That recent file could not be found.' })
           await window.api.setLastActiveFilePath({ path: null })
           await refreshRecents()
           return false
         }
 
-        applyDocument(result)
+        dispatch({
+          type: 'loadDocument',
+          document: result,
+          defaultNotesPath: state.defaultNotesPath
+        })
         await refreshRecents()
         return true
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
+        dispatch({
+          type: 'setError',
+          message: error instanceof Error ? error.message : 'Could not open the file.'
+        })
         return false
       }
     },
-    [applyDocument, refreshRecents]
+    [refreshRecents, state.defaultNotesPath]
   )
 
   useEffect(() => {
@@ -170,19 +255,25 @@ export function useDocumentSession(): UseDocumentSessionResult {
           return
         }
 
-        setDefaultNotesPath(launchState.defaultNotesPath)
-        setRecentFiles(launchState.recentFiles)
+        dispatch({
+          type: 'launchLoaded',
+          defaultNotesPath: launchState.defaultNotesPath,
+          recentFiles: launchState.recentFiles
+        })
 
         if (launchState.lastActiveFilePath) {
           await window.api.setLastActiveFilePath({ path: null })
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(error instanceof Error ? error.message : 'Could not load H3 Ink.')
+          dispatch({
+            type: 'setError',
+            message: error instanceof Error ? error.message : 'Could not load H3 Ink.'
+          })
         }
       } finally {
         if (!cancelled) {
-          setReady(true)
+          dispatch({ type: 'setReady' })
         }
       }
     }
@@ -195,12 +286,12 @@ export function useDocumentSession(): UseDocumentSessionResult {
   }, [])
 
   useEffect(() => {
-    if (!ready || !document.filePath) {
+    if (!state.ready || !state.document.filePath) {
       return
     }
 
-    void window.api.setLastActiveFilePath({ path: document.filePath })
-  }, [document.filePath, ready])
+    void window.api.setLastActiveFilePath({ path: state.document.filePath })
+  }, [state.document.filePath, state.ready])
 
   const persistWithSaveAs = useCallback(
     async (content: string, currentTitle: string, currentPath: string | null): Promise<boolean> => {
@@ -210,24 +301,22 @@ export function useDocumentSession(): UseDocumentSessionResult {
       })
 
       if (!result) {
-        setDocument((current) => ({ ...current, saveStatus: 'idle' }))
+        dispatch({ type: 'cancelSaving' })
         return false
       }
 
-      setDocument((current) => ({
-        ...current,
-        filePath: result.path,
+      dispatch({
+        type: 'saveAsSucceeded',
+        path: result.path,
         title: result.title,
-        isDirty: false,
-        saveStatus: 'saved',
-        origin: inferOrigin(result.path, defaultNotesPath),
-        lastSavedAt: result.savedAt
-      }))
-      setErrorMessage(null)
+        savedAt: result.savedAt,
+        savedContent: content,
+        defaultNotesPath: state.defaultNotesPath
+      })
       await refreshRecents()
       return true
     },
-    [defaultNotesPath, refreshRecents]
+    [refreshRecents, state.defaultNotesPath]
   )
 
   const saveDocument = useCallback(
@@ -236,54 +325,61 @@ export function useDocumentSession(): UseDocumentSessionResult {
         return
       }
 
-      const contentToSave = contentRef.current
+      const currentDocument = documentRef.current
+      const contentToSave = currentDocument.content
       if (contentToSave.trim().length === 0) {
         return
       }
 
-      if (!document.filePath && intent === 'autosave') {
+      if (!currentDocument.filePath && intent === 'autosave') {
         return
       }
 
       saveInFlightRef.current = true
-      setDocument((current) => ({ ...current, saveStatus: 'saving' }))
-      setErrorMessage(null)
+      dispatch({ type: 'markSaving' })
 
       try {
-        if (!document.filePath) {
-          await persistWithSaveAs(contentToSave, document.title, document.filePath)
+        if (!currentDocument.filePath) {
+          const saved = await persistWithSaveAs(
+            contentToSave,
+            currentDocument.title,
+            currentDocument.filePath
+          )
+          if (!saved) {
+            dispatch({ type: 'setError', message: null })
+          }
         } else {
           const saved = await window.api.saveMarkdownFile({
-            path: document.filePath,
+            path: currentDocument.filePath,
             content: contentToSave
           })
 
-          setDocument((current) => ({
-            ...current,
-            isDirty: current.content !== contentToSave,
-            saveStatus: 'saved',
-            lastSavedAt: saved.savedAt
-          }))
+          dispatch({
+            type: 'markSaved',
+            savedAt: saved.savedAt,
+            savedContent: contentToSave
+          })
           await refreshRecents()
         }
       } catch (error) {
-        setDocument((current) => ({ ...current, saveStatus: 'error' }))
-        setErrorMessage(
-          intent === 'autosave'
-            ? 'Autosave failed. Your draft is still in memory.'
-            : error instanceof Error
-              ? error.message
-              : 'Save failed.'
-        )
+        dispatch({
+          type: 'markError',
+          message:
+            intent === 'autosave'
+              ? 'Autosave failed. Your draft is still in memory.'
+              : error instanceof Error
+                ? error.message
+                : 'Save failed.'
+        })
       } finally {
         saveInFlightRef.current = false
       }
     },
-    [document.filePath, document.title, persistWithSaveAs, refreshRecents]
+    [persistWithSaveAs, refreshRecents]
   )
 
   useEffect(() => {
-    if (!ready || !document.isDirty || !document.filePath) {
+    if (!state.ready || !state.document.isDirty || !state.document.filePath) {
       return
     }
 
@@ -292,35 +388,24 @@ export function useDocumentSession(): UseDocumentSessionResult {
     }, AUTOSAVE_DELAY_MS)
 
     return () => window.clearTimeout(timeout)
-  }, [document.content, document.filePath, document.isDirty, ready, saveDocument])
+  }, [
+    saveDocument,
+    state.document.content,
+    state.document.filePath,
+    state.document.isDirty,
+    state.ready
+  ])
 
   const hydrateEditorState = useCallback((snapshot: EditorSnapshot): void => {
-    setDocument((current) => ({
-      ...current,
-      content: snapshot.markdown,
-      editorContent: snapshot.json,
-      title: current.filePath
-        ? current.title
-        : deriveSuggestedTitle(snapshot.markdown, current.title)
-    }))
+    dispatch({ type: 'hydrateEditor', markdown: snapshot.markdown })
   }, [])
 
   const updateContent = useCallback((snapshot: EditorSnapshot): void => {
-    setDocument((current) => ({
-      ...current,
-      content: snapshot.markdown,
-      editorContent: snapshot.json,
-      title: current.filePath
-        ? current.title
-        : deriveSuggestedTitle(snapshot.markdown, current.title),
-      isDirty: true,
-      saveStatus: current.saveStatus === 'error' ? 'error' : 'idle'
-    }))
+    dispatch({ type: 'updateContent', markdown: snapshot.markdown })
   }, [])
 
   const createNewNote = useCallback(async (): Promise<boolean> => {
-    setDocument(createEmptyDocument())
-    setErrorMessage(null)
+    dispatch({ type: 'resetDraft' })
     await window.api.setLastActiveFilePath({ path: null })
     return true
   }, [])
@@ -332,14 +417,21 @@ export function useDocumentSession(): UseDocumentSessionResult {
         return false
       }
 
-      applyDocument(result)
+      dispatch({
+        type: 'loadDocument',
+        document: result,
+        defaultNotesPath: state.defaultNotesPath
+      })
       await refreshRecents()
       return true
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
+      dispatch({
+        type: 'setError',
+        message: error instanceof Error ? error.message : 'Could not open the file.'
+      })
       return false
     }
-  }, [applyDocument, refreshRecents])
+  }, [refreshRecents, state.defaultNotesPath])
 
   const saveNow = useCallback(async (): Promise<void> => {
     await saveDocument('manual')
@@ -347,66 +439,65 @@ export function useDocumentSession(): UseDocumentSessionResult {
 
   const saveAs = useCallback(async (): Promise<void> => {
     try {
-      const contentToSave = contentRef.current
+      const currentDocument = documentRef.current
+      const contentToSave = currentDocument.content
       if (contentToSave.trim().length === 0) {
         return
       }
 
-      setDocument((current) => ({ ...current, saveStatus: 'saving' }))
-      await persistWithSaveAs(contentToSave, document.title, document.filePath)
+      dispatch({ type: 'markSaving' })
+      const saved = await persistWithSaveAs(
+        contentToSave,
+        currentDocument.title,
+        currentDocument.filePath
+      )
+      if (!saved) {
+        dispatch({ type: 'setError', message: null })
+      }
     } catch (error) {
-      setDocument((current) => ({ ...current, saveStatus: 'error' }))
-      setErrorMessage(error instanceof Error ? error.message : 'Save As failed.')
+      dispatch({
+        type: 'markError',
+        message: error instanceof Error ? error.message : 'Save As failed.'
+      })
     }
-  }, [document.filePath, document.title, persistWithSaveAs])
+  }, [persistWithSaveAs])
 
-  const deleteCurrentNote = useCallback(async (): Promise<void> => {
-    if (!document.filePath) {
-      return
+  const deleteCurrentNote = useCallback(async (): Promise<boolean> => {
+    const currentPath = documentRef.current.filePath
+    if (!currentPath) {
+      return false
     }
 
-    const confirmed = window.confirm(`Delete this note?\n\n${document.filePath}`)
+    const confirmed = window.confirm(`Delete this note?\n\n${currentPath}`)
     if (!confirmed) {
-      return
+      return false
     }
 
     try {
-      await window.api.deleteMarkdownFile({ path: document.filePath })
-      setDocument(createEmptyDocument())
-      setErrorMessage(null)
+      await window.api.deleteMarkdownFile({ path: currentPath })
+      dispatch({ type: 'resetDraft' })
       await window.api.setLastActiveFilePath({ path: null })
       await refreshRecents()
+      return true
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Delete failed.')
+      dispatch({
+        type: 'setError',
+        message: error instanceof Error ? error.message : 'Delete failed.'
+      })
+      return false
     }
-  }, [document.filePath, refreshRecents])
+  }, [refreshRecents])
 
   const saveLabel = useMemo(() => {
-    if (!document.filePath) {
-      return document.isDirty ? 'Unsaved draft' : 'Draft'
-    }
-
-    if (document.saveStatus === 'saving') {
-      return 'Saving'
-    }
-
-    if (document.saveStatus === 'error') {
-      return 'Save failed'
-    }
-
-    if (document.isDirty) {
-      return 'Unsaved changes'
-    }
-
-    return 'Saved'
-  }, [document.filePath, document.isDirty, document.saveStatus])
+    return getSaveLabel(state.document)
+  }, [state.document])
 
   return {
-    document,
-    recentFiles,
-    defaultNotesPath,
-    ready,
-    errorMessage,
+    document: state.document,
+    recentFiles: state.recentFiles,
+    defaultNotesPath: state.defaultNotesPath,
+    ready: state.ready,
+    errorMessage: state.errorMessage,
     saveLabel,
     createNewNote,
     hydrateEditorState,
