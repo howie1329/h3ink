@@ -1,4 +1,14 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  type ReactNode
+} from 'react'
 import type {
   H3MarkdownDocument,
   H3MissingRecentFile,
@@ -16,10 +26,6 @@ import {
 } from '@/lib/document-session'
 
 type SaveIntent = 'manual' | 'autosave'
-
-type EditorSnapshot = {
-  markdown: string
-}
 
 type SessionState = {
   document: DocumentState
@@ -51,7 +57,7 @@ type SessionAction =
   | { type: 'setError'; message: string | null }
   | { type: 'markError'; message: string }
 
-type UseDocumentSessionResult = {
+export type UseDocumentSessionResult = {
   document: DocumentState
   recentFiles: H3RecentFile[]
   defaultNotesPath: string
@@ -59,13 +65,28 @@ type UseDocumentSessionResult = {
   errorMessage: string | null
   saveLabel: string
   createNewNote: () => Promise<boolean>
-  hydrateEditorState: (snapshot: EditorSnapshot) => void
-  updateContent: (snapshot: EditorSnapshot) => void
+  hydrateEditorState: (markdown: string) => void
+  updateContent: (markdown: string) => void
   openFile: () => Promise<boolean>
   loadRecentFile: (path: string) => Promise<boolean>
   saveNow: () => Promise<void>
   saveAs: () => Promise<void>
   deleteCurrentNote: () => Promise<boolean>
+}
+
+const DocumentSessionContext = createContext<UseDocumentSessionResult | null>(null)
+
+export function DocumentSessionProvider({ children }: { children: ReactNode }): React.JSX.Element {
+  const value = useDocumentSessionState()
+  return createElement(DocumentSessionContext.Provider, { value }, children)
+}
+
+export function useDocumentSession(): UseDocumentSessionResult {
+  const value = useContext(DocumentSessionContext)
+  if (!value) {
+    throw new Error('useDocumentSession must be used within a DocumentSessionProvider')
+  }
+  return value
 }
 
 const initialState: SessionState = {
@@ -200,7 +221,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
   }
 }
 
-export function useDocumentSession(): UseDocumentSessionResult {
+function useDocumentSessionState(): UseDocumentSessionResult {
   const [state, dispatch] = useReducer(sessionReducer, initialState)
   const saveInFlightRef = useRef(false)
   const documentRef = useRef(state.document)
@@ -396,12 +417,12 @@ export function useDocumentSession(): UseDocumentSessionResult {
     state.ready
   ])
 
-  const hydrateEditorState = useCallback((snapshot: EditorSnapshot): void => {
-    dispatch({ type: 'hydrateEditor', markdown: snapshot.markdown })
+  const hydrateEditorState = useCallback((markdown: string): void => {
+    dispatch({ type: 'hydrateEditor', markdown })
   }, [])
 
-  const updateContent = useCallback((snapshot: EditorSnapshot): void => {
-    dispatch({ type: 'updateContent', markdown: snapshot.markdown })
+  const updateContent = useCallback((markdown: string): void => {
+    dispatch({ type: 'updateContent', markdown })
   }, [])
 
   const createNewNote = useCallback(async (): Promise<boolean> => {

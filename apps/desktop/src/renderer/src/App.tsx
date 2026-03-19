@@ -3,74 +3,33 @@ import { EditorWorkspace } from '@/components/editor-workspace'
 import { HomeWorkspace } from '@/components/home-workspace'
 import { SettingsWorkspace } from '@/components/settings-workspace'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { useDocumentSession } from '@/hooks/use-document-session'
-import { useCallback, useState } from 'react'
+import { DocumentSessionProvider, useDocumentSession } from '@/hooks/use-document-session'
+import { useState } from 'react'
 
 type AppScreen = 'home' | 'editor' | 'settings'
 
-function App(): React.JSX.Element {
+function AppShell(): React.JSX.Element {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [screen, setScreen] = useState<AppScreen>('home')
-  const {
-    document,
-    recentFiles,
-    defaultNotesPath,
-    ready,
-    errorMessage,
-    saveLabel,
-    createNewNote,
-    hydrateEditorState,
-    updateContent,
-    openFile,
-    loadRecentFile,
-    saveNow,
-    saveAs,
-    deleteCurrentNote
-  } = useDocumentSession()
-
-  const showEditor = useCallback(() => {
-    setScreen('editor')
-  }, [])
-
-  const showHome = useCallback(() => {
-    setScreen('home')
-  }, [])
-
-  const showSettings = useCallback(() => {
-    setScreen('settings')
-  }, [])
+  const { errorMessage, createNewNote, openFile } = useDocumentSession()
 
   async function handleCreateNewNote(): Promise<void> {
     const created = await createNewNote()
     if (created) {
-      showEditor()
+      setScreen('editor')
     }
   }
 
   async function handleOpenFile(): Promise<void> {
     const opened = await openFile()
     if (opened) {
-      showEditor()
-    }
-  }
-
-  async function handleLoadRecentFile(path: string): Promise<void> {
-    const loaded = await loadRecentFile(path)
-    if (loaded) {
-      showEditor()
-    }
-  }
-
-  async function handleDeleteCurrentNote(): Promise<void> {
-    const deleted = await deleteCurrentNote()
-    if (deleted) {
-      showHome()
+      setScreen('editor')
     }
   }
 
   function renderScreen(): React.JSX.Element {
     if (screen === 'settings') {
-      return <SettingsWorkspace onBack={showHome} />
+      return <SettingsWorkspace onBack={() => setScreen('home')} />
     }
 
     if (screen === 'home') {
@@ -89,21 +48,7 @@ function App(): React.JSX.Element {
       )
     }
 
-    return (
-      <EditorWorkspace
-        defaultNotesPath={defaultNotesPath}
-        document={document}
-        errorMessage={errorMessage}
-        ready={ready}
-        saveLabel={saveLabel}
-        onDelete={() => void handleDeleteCurrentNote()}
-        onHydrate={hydrateEditorState}
-        onOpenFile={() => void handleOpenFile()}
-        onSave={() => void saveNow()}
-        onSaveAs={() => void saveAs()}
-        onUpdate={updateContent}
-      />
-    )
+    return <EditorWorkspace onNavigateHome={() => setScreen('home')} />
   }
 
   return (
@@ -111,14 +56,10 @@ function App(): React.JSX.Element {
       <SidebarProvider defaultOpen>
         <div className="flex min-h-[100dvh] w-full bg-transparent">
           <AppSidebar
-            activeFilePath={document.filePath}
             isDarkMode={isDarkMode}
-            recentFiles={recentFiles}
-            saveLabel={saveLabel}
-            onCreateNote={() => void handleCreateNewNote()}
-            onGoHome={showHome}
-            onOpenSettings={showSettings}
-            onSelectRecent={(path) => void handleLoadRecentFile(path)}
+            onGoHome={() => setScreen('home')}
+            onNavigateToEditor={() => setScreen('editor')}
+            onOpenSettings={() => setScreen('settings')}
             onToggleTheme={() => setIsDarkMode((current) => !current)}
           />
 
@@ -126,6 +67,14 @@ function App(): React.JSX.Element {
         </div>
       </SidebarProvider>
     </div>
+  )
+}
+
+function App(): React.JSX.Element {
+  return (
+    <DocumentSessionProvider>
+      <AppShell />
+    </DocumentSessionProvider>
   )
 }
 

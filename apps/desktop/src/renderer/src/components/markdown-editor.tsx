@@ -2,20 +2,10 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import { useEffect } from 'react'
 import { h3InkEditorExtensions } from '@/lib/tiptap'
 
-export type EditorSnapshot = {
-  markdown: string
-}
-
 type MarkdownEditorProps = {
   value: string
-  onHydrate: (snapshot: EditorSnapshot) => void
-  onChange: (snapshot: EditorSnapshot) => void
-}
-
-function createSnapshot(editor: NonNullable<ReturnType<typeof useEditor>>): EditorSnapshot {
-  return {
-    markdown: editor.getMarkdown()
-  }
+  onHydrate: (markdown: string) => void
+  onChange: (markdown: string) => void
 }
 
 export function MarkdownEditor({
@@ -35,10 +25,10 @@ export function MarkdownEditor({
       }
     },
     onCreate: ({ editor }) => {
-      onHydrate(createSnapshot(editor))
+      onHydrate(editor.getMarkdown())
     },
     onUpdate: ({ editor }) => {
-      onChange(createSnapshot(editor))
+      onChange(editor.getMarkdown())
     }
   })
 
@@ -51,7 +41,7 @@ export function MarkdownEditor({
       contentType: 'markdown',
       emitUpdate: false
     })
-    onHydrate(createSnapshot(editor))
+    onHydrate(editor.getMarkdown())
   }, [editor, onHydrate, value])
 
   return (

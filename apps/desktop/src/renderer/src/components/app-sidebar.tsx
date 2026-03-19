@@ -13,31 +13,25 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar'
-import type { H3RecentFile } from '../../../shared/file-gateway'
+import { useDocumentSession } from '@/hooks/use-document-session'
 
 type AppSidebarProps = {
-  activeFilePath: string | null
   isDarkMode: boolean
-  recentFiles: H3RecentFile[]
-  saveLabel: string
-  onCreateNote: () => void
+  onToggleTheme: () => void
   onGoHome: () => void
   onOpenSettings: () => void
-  onSelectRecent: (path: string) => void
-  onToggleTheme: () => void
+  onNavigateToEditor: () => void
 }
 
 export function AppSidebar({
-  activeFilePath,
   isDarkMode,
-  recentFiles,
-  saveLabel,
-  onCreateNote,
+  onToggleTheme,
   onGoHome,
   onOpenSettings,
-  onSelectRecent,
-  onToggleTheme
+  onNavigateToEditor
 }: AppSidebarProps): React.JSX.Element {
+  const { document, recentFiles, saveLabel, createNewNote, loadRecentFile } = useDocumentSession()
+
   return (
     <Sidebar
       collapsible="offcanvas"
@@ -66,7 +60,12 @@ export function AppSidebar({
           <SidebarGroupContent>
             <Button
               type="button"
-              onClick={onCreateNote}
+              onClick={async () => {
+                const created = await createNewNote()
+                if (created) {
+                  onNavigateToEditor()
+                }
+              }}
               variant="ghost"
               size="compact"
               className="mb-2 w-full justify-start gap-2 px-3 text-foreground/76 hover:text-foreground"
@@ -87,8 +86,13 @@ export function AppSidebar({
                 recentFiles.map((note) => (
                   <SidebarMenuItem key={note.path}>
                     <SidebarMenuButton
-                      isActive={activeFilePath === note.path}
-                      onClick={() => onSelectRecent(note.path)}
+                      isActive={document.filePath === note.path}
+                      onClick={async () => {
+                        const loaded = await loadRecentFile(note.path)
+                        if (loaded) {
+                          onNavigateToEditor()
+                        }
+                      }}
                       size="compact"
                       className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
                     >
