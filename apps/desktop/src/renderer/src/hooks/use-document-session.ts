@@ -34,11 +34,11 @@ type UseDocumentSessionResult = {
   ready: boolean
   errorMessage: string | null
   saveLabel: string
-  createNewNote: () => Promise<void>
+  createNewNote: () => Promise<boolean>
   hydrateEditorState: (snapshot: EditorSnapshot) => void
   updateContent: (snapshot: EditorSnapshot) => void
-  openFile: () => Promise<void>
-  loadRecentFile: (path: string) => Promise<void>
+  openFile: () => Promise<boolean>
+  loadRecentFile: (path: string) => Promise<boolean>
   saveNow: () => Promise<void>
   saveAs: () => Promise<void>
   deleteCurrentNote: () => Promise<void>
@@ -137,7 +137,7 @@ export function useDocumentSession(): UseDocumentSessionResult {
   )
 
   const loadRecentFile = useCallback(
-    async (path: string): Promise<void> => {
+    async (path: string): Promise<boolean> => {
       try {
         const result = await window.api.openRecentFile({ path })
 
@@ -146,13 +146,15 @@ export function useDocumentSession(): UseDocumentSessionResult {
           setDocument(createEmptyDocument())
           await window.api.setLastActiveFilePath({ path: null })
           await refreshRecents()
-          return
+          return false
         }
 
         applyDocument(result)
         await refreshRecents()
+        return true
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
+        return false
       }
     },
     [applyDocument, refreshRecents]
@@ -172,29 +174,7 @@ export function useDocumentSession(): UseDocumentSessionResult {
         setRecentFiles(launchState.recentFiles)
 
         if (launchState.lastActiveFilePath) {
-          const result = await window.api.openRecentFile({ path: launchState.lastActiveFilePath })
-          if (cancelled) {
-            return
-          }
-
-          if (isMissingRecentFile(result)) {
-            await window.api.setLastActiveFilePath({ path: null })
-            setDocument(createEmptyDocument())
-            setErrorMessage('Your last active file is missing. Starting with an empty draft.')
-            setRecentFiles(await window.api.listRecentFiles())
-          } else {
-            setDocument({
-              content: result.content,
-              editorContent: null,
-              filePath: result.path,
-              title: result.title,
-              isDirty: false,
-              saveStatus: 'saved',
-              origin: inferOrigin(result.path, launchState.defaultNotesPath),
-              lastSavedAt: new Date().toISOString(),
-              sessionKey: Date.now()
-            })
-          }
+          await window.api.setLastActiveFilePath({ path: null })
         }
       } catch (error) {
         if (!cancelled) {
@@ -338,23 +318,26 @@ export function useDocumentSession(): UseDocumentSessionResult {
     }))
   }, [])
 
-  const createNewNote = useCallback(async (): Promise<void> => {
+  const createNewNote = useCallback(async (): Promise<boolean> => {
     setDocument(createEmptyDocument())
     setErrorMessage(null)
     await window.api.setLastActiveFilePath({ path: null })
+    return true
   }, [])
 
-  const openFile = useCallback(async (): Promise<void> => {
+  const openFile = useCallback(async (): Promise<boolean> => {
     try {
       const result = await window.api.openMarkdownFile()
       if (!result) {
-        return
+        return false
       }
 
       applyDocument(result)
       await refreshRecents()
+      return true
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
+      return false
     }
   }, [applyDocument, refreshRecents])
 
