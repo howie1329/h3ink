@@ -1,3 +1,4 @@
+import type { JSONContent } from '@tiptap/core'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   H3MarkdownDocument,
@@ -11,12 +12,36 @@ type DocumentOrigin = 'draft' | 'desktop' | 'external'
 
 type DocumentState = {
   content: string
+  editorContent: JSONContent | null
   filePath: string | null
   title: string
   isDirty: boolean
   saveStatus: SaveStatus
   origin: DocumentOrigin
   lastSavedAt: string | null
+  sessionKey: number
+}
+
+type EditorSnapshot = {
+  markdown: string
+  json: JSONContent
+}
+
+type UseDocumentSessionResult = {
+  document: DocumentState
+  recentFiles: H3RecentFile[]
+  defaultNotesPath: string
+  ready: boolean
+  errorMessage: string | null
+  saveLabel: string
+  createNewNote: () => Promise<void>
+  hydrateEditorState: (snapshot: EditorSnapshot) => void
+  updateContent: (snapshot: EditorSnapshot) => void
+  openFile: () => Promise<void>
+  loadRecentFile: (path: string) => Promise<void>
+  saveNow: () => Promise<void>
+  saveAs: () => Promise<void>
+  deleteCurrentNote: () => Promise<void>
 }
 
 const EMPTY_TITLE = 'Untitled'
@@ -26,12 +51,14 @@ const UNTITLED_FILE_PREFIX = 'untitled'
 function createEmptyDocument(): DocumentState {
   return {
     content: '',
+    editorContent: null,
     filePath: null,
     title: EMPTY_TITLE,
     isDirty: false,
     saveStatus: 'idle',
     origin: 'draft',
-    lastSavedAt: null
+    lastSavedAt: null,
+    sessionKey: Date.now()
   }
 }
 
@@ -73,10 +100,9 @@ function isMissingRecentFile(
   return 'missing' in result
 }
 
-export function useDocumentSession() {
+export function useDocumentSession(): UseDocumentSessionResult {
   const [document, setDocument] = useState<DocumentState>(createEmptyDocument)
   const [recentFiles, setRecentFiles] = useState<H3RecentFile[]>([])
-  const [desktopNotes, setDesktopNotes] = useState<H3RecentFile[]>([])
   const [defaultNotesPath, setDefaultNotesPath] = useState('')
   const [ready, setReady] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -92,21 +118,18 @@ export function useDocumentSession() {
     setRecentFiles(files)
   }, [])
 
-  const refreshDesktopNotes = useCallback(async (): Promise<void> => {
-    const files = await window.api.listDesktopNotes()
-    setDesktopNotes(files)
-  }, [])
-
   const applyDocument = useCallback(
     (nextDocument: H3MarkdownDocument): void => {
       setDocument({
         content: nextDocument.content,
+        editorContent: null,
         filePath: nextDocument.path,
         title: nextDocument.title,
         isDirty: false,
         saveStatus: 'saved',
         origin: inferOrigin(nextDocument.path, defaultNotesPath),
-        lastSavedAt: new Date().toISOString()
+        lastSavedAt: new Date().toISOString(),
+        sessionKey: Date.now()
       })
       setErrorMessage(null)
     },
@@ -123,19 +146,16 @@ export function useDocumentSession() {
           setDocument(createEmptyDocument())
           await window.api.setLastActiveFilePath({ path: null })
           await refreshRecents()
-          await refreshDesktopNotes()
           return
         }
 
-        const document = result
-        applyDocument(document)
+        applyDocument(result)
         await refreshRecents()
-        await refreshDesktopNotes()
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
       }
     },
-    [applyDocument, refreshDesktopNotes, refreshRecents]
+    [applyDocument, refreshRecents]
   )
 
   useEffect(() => {
@@ -150,7 +170,6 @@ export function useDocumentSession() {
 
         setDefaultNotesPath(launchState.defaultNotesPath)
         setRecentFiles(launchState.recentFiles)
-        setDesktopNotes(await window.api.listDesktopNotes())
 
         if (launchState.lastActiveFilePath) {
           const result = await window.api.openRecentFile({ path: launchState.lastActiveFilePath })
@@ -163,17 +182,17 @@ export function useDocumentSession() {
             setDocument(createEmptyDocument())
             setErrorMessage('Your last active file is missing. Starting with an empty draft.')
             setRecentFiles(await window.api.listRecentFiles())
-            setDesktopNotes(await window.api.listDesktopNotes())
           } else {
-            const document = result
             setDocument({
-              content: document.content,
-              filePath: document.path,
-              title: document.title,
+              content: result.content,
+              editorContent: null,
+              filePath: result.path,
+              title: result.title,
               isDirty: false,
               saveStatus: 'saved',
-              origin: inferOrigin(document.path, launchState.defaultNotesPath),
-              lastSavedAt: new Date().toISOString()
+              origin: inferOrigin(result.path, launchState.defaultNotesPath),
+              lastSavedAt: new Date().toISOString(),
+              sessionKey: Date.now()
             })
           }
         }
@@ -203,6 +222,34 @@ export function useDocumentSession() {
     void window.api.setLastActiveFilePath({ path: document.filePath })
   }, [document.filePath, ready])
 
+  const persistWithSaveAs = useCallback(
+    async (content: string, currentTitle: string, currentPath: string | null): Promise<boolean> => {
+      const result = await window.api.saveMarkdownFileAs({
+        content,
+        suggestedName: deriveSuggestedTitle(content, currentTitle) || fileNameFromPath(currentPath)
+      })
+
+      if (!result) {
+        setDocument((current) => ({ ...current, saveStatus: 'idle' }))
+        return false
+      }
+
+      setDocument((current) => ({
+        ...current,
+        filePath: result.path,
+        title: result.title,
+        isDirty: false,
+        saveStatus: 'saved',
+        origin: inferOrigin(result.path, defaultNotesPath),
+        lastSavedAt: result.savedAt
+      }))
+      setErrorMessage(null)
+      await refreshRecents()
+      return true
+    },
+    [defaultNotesPath, refreshRecents]
+  )
+
   const saveDocument = useCallback(
     async (intent: SaveIntent): Promise<void> => {
       if (saveInFlightRef.current) {
@@ -210,10 +257,11 @@ export function useDocumentSession() {
       }
 
       const contentToSave = contentRef.current
-      const hasPath = Boolean(document.filePath)
-      const hasMeaningfulDraftContent = contentToSave.trim().length > 0
+      if (contentToSave.trim().length === 0) {
+        return
+      }
 
-      if (!hasPath && !hasMeaningfulDraftContent) {
+      if (!document.filePath && intent === 'autosave') {
         return
       }
 
@@ -223,20 +271,7 @@ export function useDocumentSession() {
 
       try {
         if (!document.filePath) {
-          const created = await window.api.createDesktopNote({
-            content: contentToSave,
-            suggestedTitle: deriveSuggestedTitle(contentToSave, document.title)
-          })
-
-          setDocument((current) => ({
-            ...current,
-            filePath: created.path,
-            title: created.title,
-            origin: inferOrigin(created.path, defaultNotesPath),
-            isDirty: current.content !== contentToSave,
-            saveStatus: 'saved',
-            lastSavedAt: new Date().toISOString()
-          }))
+          await persistWithSaveAs(contentToSave, document.title, document.filePath)
         } else {
           const saved = await window.api.saveMarkdownFile({
             path: document.filePath,
@@ -249,10 +284,8 @@ export function useDocumentSession() {
             saveStatus: 'saved',
             lastSavedAt: saved.savedAt
           }))
+          await refreshRecents()
         }
-
-        await refreshRecents()
-        await refreshDesktopNotes()
       } catch (error) {
         setDocument((current) => ({ ...current, saveStatus: 'error' }))
         setErrorMessage(
@@ -266,15 +299,11 @@ export function useDocumentSession() {
         saveInFlightRef.current = false
       }
     },
-    [defaultNotesPath, document.filePath, document.title, refreshDesktopNotes, refreshRecents]
+    [document.filePath, document.title, persistWithSaveAs, refreshRecents]
   )
 
   useEffect(() => {
-    if (!ready || !document.isDirty) {
-      return
-    }
-
-    if (!document.filePath && document.content.trim().length === 0) {
+    if (!ready || !document.isDirty || !document.filePath) {
       return
     }
 
@@ -285,11 +314,25 @@ export function useDocumentSession() {
     return () => window.clearTimeout(timeout)
   }, [document.content, document.filePath, document.isDirty, ready, saveDocument])
 
-  const updateContent = useCallback((content: string): void => {
+  const hydrateEditorState = useCallback((snapshot: EditorSnapshot): void => {
     setDocument((current) => ({
       ...current,
-      content,
-      title: current.filePath ? current.title : deriveSuggestedTitle(content, current.title),
+      content: snapshot.markdown,
+      editorContent: snapshot.json,
+      title: current.filePath
+        ? current.title
+        : deriveSuggestedTitle(snapshot.markdown, current.title)
+    }))
+  }, [])
+
+  const updateContent = useCallback((snapshot: EditorSnapshot): void => {
+    setDocument((current) => ({
+      ...current,
+      content: snapshot.markdown,
+      editorContent: snapshot.json,
+      title: current.filePath
+        ? current.title
+        : deriveSuggestedTitle(snapshot.markdown, current.title),
       isDirty: true,
       saveStatus: current.saveStatus === 'error' ? 'error' : 'idle'
     }))
@@ -310,11 +353,10 @@ export function useDocumentSession() {
 
       applyDocument(result)
       await refreshRecents()
-      await refreshDesktopNotes()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Could not open the file.')
     }
-  }, [applyDocument, refreshDesktopNotes, refreshRecents])
+  }, [applyDocument, refreshRecents])
 
   const saveNow = useCallback(async (): Promise<void> => {
     await saveDocument('manual')
@@ -322,33 +364,18 @@ export function useDocumentSession() {
 
   const saveAs = useCallback(async (): Promise<void> => {
     try {
-      const result = await window.api.saveMarkdownFileAs({
-        content: contentRef.current,
-        suggestedName:
-          deriveSuggestedTitle(contentRef.current, document.title) || fileNameFromPath(document.filePath)
-      })
-
-      if (!result) {
+      const contentToSave = contentRef.current
+      if (contentToSave.trim().length === 0) {
         return
       }
 
-      setDocument((current) => ({
-        ...current,
-        filePath: result.path,
-        title: result.title,
-        isDirty: false,
-        saveStatus: 'saved',
-        origin: inferOrigin(result.path, defaultNotesPath),
-        lastSavedAt: result.savedAt
-      }))
-      setErrorMessage(null)
-      await refreshRecents()
-      await refreshDesktopNotes()
+      setDocument((current) => ({ ...current, saveStatus: 'saving' }))
+      await persistWithSaveAs(contentToSave, document.title, document.filePath)
     } catch (error) {
       setDocument((current) => ({ ...current, saveStatus: 'error' }))
       setErrorMessage(error instanceof Error ? error.message : 'Save As failed.')
     }
-  }, [defaultNotesPath, document.filePath, document.title, refreshDesktopNotes, refreshRecents])
+  }, [document.filePath, document.title, persistWithSaveAs])
 
   const deleteCurrentNote = useCallback(async (): Promise<void> => {
     if (!document.filePath) {
@@ -366,15 +393,14 @@ export function useDocumentSession() {
       setErrorMessage(null)
       await window.api.setLastActiveFilePath({ path: null })
       await refreshRecents()
-      await refreshDesktopNotes()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Delete failed.')
     }
-  }, [document.filePath, refreshDesktopNotes, refreshRecents])
+  }, [document.filePath, refreshRecents])
 
   const saveLabel = useMemo(() => {
     if (!document.filePath) {
-      return 'Draft'
+      return document.isDirty ? 'Unsaved draft' : 'Draft'
     }
 
     if (document.saveStatus === 'saving') {
@@ -395,12 +421,12 @@ export function useDocumentSession() {
   return {
     document,
     recentFiles,
-    desktopNotes,
     defaultNotesPath,
     ready,
     errorMessage,
     saveLabel,
     createNewNote,
+    hydrateEditorState,
     updateContent,
     openFile,
     loadRecentFile,

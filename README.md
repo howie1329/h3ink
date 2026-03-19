@@ -8,17 +8,17 @@ The product goal is simple: a clean writing surface for local `.md` files with f
 
 ### Core features
 
-- Split-pane layout with a Markdown editor on the left and live preview on the right
+- Minimal TipTap editor for writing Markdown-backed notes
 - Create, open, and save `.md` files through native file dialogs
-- Auto-save on a short debounce so edits are not lost
+- Auto-save on a short debounce for saved files
 - Simple sidebar for recently opened files
 
 ### UI
 
 - Dark theme by default
-- Clean monospace editor font
+- Clean editor-first writing surface
 - Minimal interface with very little toolbar clutter
-- Resizable split pane so the user can favor writing or previewing
+- Lightweight file and save-state feedback
 
 ## Product direction
 

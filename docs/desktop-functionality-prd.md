@@ -2,11 +2,11 @@
 
 ## 1. Purpose
 
-Define the core desktop behaviors required for the H3 Ink MVP so users can create, open, edit, preview, save, and resume plain Markdown documents on macOS with minimal friction.
+Define the core desktop behaviors required for the H3 Ink MVP so users can create, open, edit, save, and resume plain Markdown documents on macOS with minimal friction through a TipTap-based editor.
 
 ## 2. Product Goal
 
-Deliver a fast, local-first Markdown desktop app that works directly with `.md` files, provides immediate visual feedback, and avoids the complexity of note libraries, cloud sync, or advanced editing systems.
+Deliver a fast, local-first Markdown desktop app that works directly with `.md` files, uses TipTap as the editing surface, preserves Markdown portability at the filesystem boundary, and avoids the complexity of note libraries, sync, and formatting-heavy editor chrome.
 
 ## 3. Target Users
 
@@ -19,8 +19,8 @@ Deliver a fast, local-first Markdown desktop app that works directly with `.md` 
 
 1. Document session lifecycle
 2. Local file open/save flows
-3. Autosave behavior
-4. Live Markdown preview
+3. Autosave behavior for saved files only
+4. Markdown import into TipTap and export back to Markdown
 5. Recent files and relaunch context
 6. Error handling for missing or moved files
 
@@ -30,12 +30,15 @@ Deliver a fast, local-first Markdown desktop app that works directly with `.md` 
 - Collaboration
 - Search
 - Tags
-- Rich-text editing
 - Formatting toolbar
+- Bubble menu
 - Slash commands
+- Comments
+- Tables
 - Plugin system
 - App-managed note database
 - Folder tree navigation
+- Live preview pane in the MVP editor workspace
 - Web-based editing
 - Windows/Linux MVP packaging
 
@@ -57,25 +60,25 @@ Deliver a fast, local-first Markdown desktop app that works directly with `.md` 
 ### 6.2 Open Existing Markdown File
 
 - User can open a local `.md` file using a native file picker.
-- App reads the file content into the editor and preview.
+- App reads the file content as Markdown and converts it into TipTap editor state.
 - Opened file becomes the active document session.
 - The opened file is added to the recent files list.
 
 **Acceptance criteria**
 
 - Native open dialog filters for Markdown-compatible files.
-- Opened content appears in both editor and preview without restart.
+- Opened content appears in the editor without restart.
 - Active file metadata updates after open completes.
 
 ### 6.3 Save Existing File
 
-- For path-backed documents, the app can write the latest editor contents to disk.
-- Save must preserve the current file path.
-- Save timestamp or persistence state should update after successful save.
+- For path-backed documents, the app writes the latest editor state back to disk as Markdown.
+- Save preserves the current file path.
+- Save timestamp or persistence state updates after successful save.
 
 **Acceptance criteria**
 
-- Saving an opened file overwrites the same file.
+- Saving an opened file overwrites the same file as Markdown.
 - Save failures surface a user-visible error state.
 - Dirty state clears after a successful save.
 
@@ -103,23 +106,27 @@ Deliver a fast, local-first Markdown desktop app that works directly with `.md` 
 - Editing an unsaved draft does not create a file automatically.
 - Autosave failures do not crash the app and present recoverable feedback.
 
-### 6.6 Live Markdown Preview
+### 6.6 Markdown Conversion Boundary
 
-- Preview updates as the user types.
-- MVP rendering supports CommonMark basics only:
+- TipTap is the live editor surface and Markdown is the file-format boundary.
+- App opens `.md` by parsing Markdown into TipTap document state.
+- App saves by serializing TipTap document state back into Markdown.
+- MVP support is intentionally narrow:
+  - paragraphs
   - headings
+  - emphasis
   - lists
   - links
   - code blocks
   - blockquotes
-  - emphasis
-- Preview should remain visually aligned with the editor workflow, not become a full publishing layout.
+  - hard breaks
+- Unsupported Markdown should degrade gracefully and never crash the app.
 
 **Acceptance criteria**
 
-- Preview refreshes fast enough to feel live during normal typing.
-- Supported Markdown syntax renders consistently.
-- Unsupported advanced syntax fails gracefully without breaking the preview pane.
+- Supported syntax opens, edits, and saves reliably.
+- Save output remains a standard Markdown file.
+- Unsupported or unconfigured syntax failures remain user-safe and non-destructive.
 
 ### 6.7 Recent Files
 
@@ -148,28 +155,31 @@ Deliver a fast, local-first Markdown desktop app that works directly with `.md` 
 
 ## 7. Non-Functional Requirements
 
-- **Performance:** startup should feel lightweight; typing and preview updates should remain responsive.
+- **Performance:** startup should feel lightweight; typing and autosave should remain responsive.
 - **Portability:** all documents remain standard `.md` files on disk.
 - **Simplicity:** avoid database, sync layer, or hidden content storage.
 - **Reliability:** file failures should be isolated and user-readable.
-- **Maintainability:** document/session state, filesystem access, recent-files persistence, and preview rendering should remain separate concerns.
+- **Maintainability:** document/session state, filesystem access, Markdown conversion, and recent-files persistence should remain separate concerns.
+- **Risk disclosure:** TipTap Markdown support is early/beta, so the MVP only guarantees reliable round-tripping for the supported subset.
 
 ## 8. Suggested Architecture Boundaries
 
 - **Document session state**
-  - active content
+  - active Markdown snapshot
+  - active editor state
   - active path
   - title
   - dirty/saved state
   - autosave eligibility
+- **Markdown conversion boundary**
+  - parse Markdown into TipTap state
+  - serialize TipTap state back into Markdown
+  - keep supported syntax narrow and explicit
 - **Filesystem gateway**
   - open
   - save
   - save as
   - reopen recent
-- **Preview pipeline**
-  - Markdown parsing
-  - sanitization/rendering boundary
 - **Recent files store**
   - persistent local settings
   - missing-file pruning
@@ -181,14 +191,15 @@ Deliver a fast, local-first Markdown desktop app that works directly with `.md` 
 - React renderer state management
 - Shared TypeScript document/file types
 - Small persistence layer for recent files and launch state
-- Markdown rendering library for CommonMark subset
+- TipTap core editor packages
+- TipTap Markdown integration for the supported subset
 
 ## 10. Release Readiness Checklist
 
-- New draft flow works
+- New draft flow stays in memory until `Save As`
 - Open/save/save-as flows work
 - Autosave works for path-backed files only
-- Live preview supports MVP syntax set
+- Supported Markdown subset round-trips cleanly
 - Recent files persist across relaunch
 - Missing-file behavior is graceful
 - macOS-first experience feels stable and uncluttered

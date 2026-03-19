@@ -1,6 +1,6 @@
 # desktop
 
-An Electron application with React and TypeScript
+An Electron application with React, TypeScript, and a minimal TipTap Markdown editor.
 
 ## Recommended IDE Setup
 

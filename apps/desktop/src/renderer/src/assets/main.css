@@ -1,4 +1,4 @@
-@import "@h3ink/ui/styles.css";
+@import '@h3ink/ui/styles.css';
 
 @layer base {
   html,
@@ -12,10 +12,94 @@
     background:
       radial-gradient(circle at top, rgba(242, 239, 232, 0.08), transparent 34%),
       linear-gradient(180deg, #09090b 0%, #111216 100%);
-    user-select: none;
   }
 
   #root {
     min-height: 100vh;
   }
+}
+
+.h3ink-editor {
+  color: hsl(var(--foreground));
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    Liberation Mono,
+    monospace;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+
+.h3ink-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: color-mix(in srgb, hsl(var(--muted-foreground)) 78%, transparent);
+  float: left;
+  pointer-events: none;
+  height: 0;
+}
+
+.h3ink-editor > * + * {
+  margin-top: 0.9rem;
+}
+
+.h3ink-editor h1,
+.h3ink-editor h2,
+.h3ink-editor h3 {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.h3ink-editor h1 {
+  font-size: 1.6rem;
+}
+
+.h3ink-editor h2 {
+  font-size: 1.25rem;
+}
+
+.h3ink-editor h3 {
+  font-size: 1.08rem;
+}
+
+.h3ink-editor ul,
+.h3ink-editor ol {
+  padding-left: 1.3rem;
+}
+
+.h3ink-editor blockquote {
+  border-left: 2px solid color-mix(in srgb, hsl(var(--border)) 76%, transparent);
+  color: color-mix(in srgb, hsl(var(--foreground)) 82%, transparent);
+  padding-left: 1rem;
+}
+
+.h3ink-editor code {
+  background: color-mix(in srgb, hsl(var(--muted)) 70%, transparent);
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.3rem;
+}
+
+.h3ink-editor pre {
+  background: color-mix(in srgb, hsl(var(--card)) 70%, black 18%);
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 78%, transparent);
+  border-radius: 1rem;
+  overflow-x: auto;
+  padding: 0.9rem 1rem;
+}
+
+.h3ink-editor pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.h3ink-editor a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }

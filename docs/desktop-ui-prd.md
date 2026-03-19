@@ -2,11 +2,11 @@
 
 ## 1. Purpose
 
-Define the MVP desktop user interface for H3 Ink, focusing on a calm, minimal writing experience that supports the functional requirements without adding unnecessary chrome.
+Define the MVP desktop user interface for H3 Ink, focusing on a calm, minimal TipTap writing experience that supports the functional requirements without adding unnecessary chrome.
 
 ## 2. UX Principle
 
-The interface should feel restrained, intentional, and invisible enough that the user’s attention stays on writing and previewing Markdown.
+The interface should feel restrained, intentional, and invisible enough that the user’s attention stays on writing.
 
 ## 3. UI Goals
 
@@ -20,11 +20,9 @@ The interface should feel restrained, intentional, and invisible enough that the
 
 1. Main app window
 2. Sidebar for recent files
-3. Editor pane
-4. Preview pane
-5. Split-pane resizer
-6. Lightweight status/feedback states
-7. Native file dialogs
+3. Editor workspace
+4. Lightweight status/feedback states
+5. Native file dialogs
 
 ## 5. Layout Requirements
 
@@ -41,18 +39,17 @@ The interface should feel restrained, intentional, and invisible enough that the
 - Nonessential controls are hidden or minimized.
 - Window layout feels usable without setup.
 
-### 5.2 Split-Pane Workspace
+### 5.2 Editor Workspace
 
-- Editor on the left
-- Live preview on the right
-- Divider is resizable
-- Pane widths persist only if simple to implement; otherwise default ratio is acceptable for MVP
+- Replace the previous split editor/preview layout with a single editor-first workspace.
+- TipTap is the primary writing surface.
+- Supporting file status and save feedback should stay lightweight and secondary.
 
 **Acceptance criteria**
 
-- User can drag the divider to prioritize writing or previewing.
-- Panes remain stable and readable at common desktop widths.
-- Resizing does not break layout or content rendering.
+- The editor occupies the dominant share of the window.
+- Supporting status UI does not crowd the writing surface.
+- Common desktop window sizes remain comfortable for long sessions.
 
 ### 5.3 Sidebar
 
@@ -76,9 +73,9 @@ The interface should feel restrained, intentional, and invisible enough that the
 
 ### 6.2 Typography
 
-- Monospace font in the editor
-- Clear, readable text in both panes
-- Visual hierarchy in preview should reflect Markdown structure without feeling overly styled
+- Monospace or monospace-leaning writing feel in the editor
+- Clear, readable text in the main workspace
+- Visual hierarchy in the editor should reflect supported Markdown structure without feeling overly styled
 
 ### 6.3 UI Chrome
 
@@ -88,32 +85,21 @@ The interface should feel restrained, intentional, and invisible enough that the
 
 ## 7. Component-Level Requirements
 
-### 7.1 Editor Pane
+### 7.1 Editor Surface
 
-- Plain textarea-style editor for MVP
+- Minimal TipTap editor for MVP
 - Fast typing performance
 - Clear caret and selection visibility in dark mode
 - No syntax-heavy IDE affordances required
+- No toolbar, bubble menu, or formatting ribbon
 
 **Acceptance criteria**
 
 - Editor is immediately focusable and usable.
-- Markdown syntax remains easy to scan in monospace.
+- Writing remains comfortable even though the editor is schema-based rather than raw Markdown text.
 - Long text entry remains comfortable.
 
-### 7.2 Preview Pane
-
-- Rendered Markdown display for supported CommonMark basics
-- Preview should look clean and trustworthy, not “designed” for publishing
-- Scroll behavior should be stable and readable
-
-**Acceptance criteria**
-
-- Basic Markdown structures are visually distinct.
-- Preview remains legible in dark mode.
-- Preview updates feel near-immediate during editing.
-
-### 7.3 Empty/Initial States
+### 7.2 Empty/Initial States
 
 - App should feel ready even before a file is opened
 - Empty state should encourage writing or opening a file
@@ -124,7 +110,7 @@ The interface should feel restrained, intentional, and invisible enough that the
 - First-time launch does not feel broken or blank.
 - User has a clear next action: start writing or open a file.
 
-### 7.4 Save and Error Feedback
+### 7.3 Save and Error Feedback
 
 - Subtle feedback for save status, autosave, or file errors
 - Avoid disruptive modal behavior unless required for desktop-native flows
@@ -148,7 +134,7 @@ The interface should feel restrained, intentional, and invisible enough that the
 
 - Launch app
 - Use native open dialog or click recent file
-- Continue editing in split-pane view
+- Continue editing in the main editor workspace
 
 ### 8.3 Resume Previous Work
 
@@ -158,9 +144,9 @@ The interface should feel restrained, intentional, and invisible enough that the
 
 ### 8.4 Review Formatting While Writing
 
-- Type Markdown in editor
-- Observe rendered output in preview
-- Resize panes as needed
+- Type in editor
+- Observe structure directly in the editor surface
+- Save to `.md` and continue editing without leaving the main workspace
 
 ## 9. Desktop-Specific UX Constraints
 
@@ -173,7 +159,7 @@ The interface should feel restrained, intentional, and invisible enough that the
 
 - Adequate dark-mode contrast
 - Keyboard-focus visibility
-- Resizer and clickable sidebar items should have clear hit targets
+- Clickable sidebar items should have clear hit targets
 - Font size should be readable at default desktop scale
 
 ## 11. UI Implementation Notes
@@ -181,17 +167,15 @@ The interface should feel restrained, intentional, and invisible enough that the
 - Keep the main shell composed of:
   - app frame/container
   - sidebar
-  - split layout
-  - editor panel
-  - preview panel
+  - editor workspace
   - lightweight status region
-- Avoid introducing a complex command bar, ribbon, or formatting toolbar in MVP
+- Avoid introducing a complex command bar, ribbon, formatting toolbar, or selection menu in MVP
 - Prefer simple reusable primitives over a large component system for the first release
 
 ## 12. Success Metrics for the UI
 
 - User can start writing within seconds of launch
 - File actions feel native and unsurprising
-- Split-pane layout supports both drafting and reviewing
+- The editor-first layout supports drafting without extra chrome
 - Interface feels calmer than typical note apps
 - Sidebar improves re-entry without turning into navigation overhead
