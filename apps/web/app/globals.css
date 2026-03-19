@@ -1,22 +1,38 @@
 @import "@h3ink/ui/styles.css";
 
+@layer theme {
+  :root {
+    --marketing-paper: #f7f3ec;
+    --marketing-panel: rgba(255, 252, 247, 0.74);
+    --marketing-panel-strong: rgba(255, 253, 249, 0.92);
+    --marketing-line: rgba(31, 34, 28, 0.08);
+    --marketing-line-strong: rgba(31, 34, 28, 0.14);
+    --marketing-ink: #171a16;
+    --marketing-soft-ink: rgba(23, 26, 22, 0.74);
+    --marketing-muted: rgba(23, 26, 22, 0.48);
+    --marketing-accent: #1f231e;
+    --marketing-accent-foreground: #f5f1e8;
+    --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
 @layer base {
   html {
     background:
-      radial-gradient(circle at top, rgba(242, 239, 232, 0.08), transparent 34%),
-      linear-gradient(180deg, #09090b 0%, #111216 100%);
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.92), transparent 38%),
+      linear-gradient(180deg, #fbf8f1 0%, var(--marketing-paper) 54%, #f1eadf 100%);
   }
 
   body {
     @apply bg-background text-foreground;
     background:
-      radial-gradient(circle at top, rgba(242, 239, 232, 0.08), transparent 34%),
-      linear-gradient(180deg, #09090b 0%, #111216 100%);
-    color: #f4efe3;
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.92), transparent 38%),
+      linear-gradient(180deg, #fbf8f1 0%, var(--marketing-paper) 54%, #f1eadf 100%);
+    color: var(--marketing-ink);
   }
 
   ::selection {
-    background: rgba(242, 239, 232, 0.24);
-    color: #f7f3ea;
+    background: rgba(28, 31, 27, 0.16);
+    color: var(--marketing-ink);
   }
 }
