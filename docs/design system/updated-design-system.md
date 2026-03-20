@@ -12,6 +12,8 @@
 - **Rules** state *what* to enforce; *how* you wire them (Tailwind, styled-components, SwiftUI, etc.) is up to your codebase.
 - For AI tasks, paste the **AI instructions** section (end of doc) and point to your project’s actual token file or theme module if you have one.
 
+**H3 Ink — global CSS / shared theme:** There is **no intention** to change **global or shared theme colors** (for example `packages/ui` CSS variables) to match the reference HSL values in this document. Those values illustrate **semantic roles** and plausible relationships for reviews and new work. In this monorepo, the **existing** palette remains the source of truth for actual color literals; apply this document’s **rules** (semantic naming, layering, contrast, one accent, usage) using those existing tokens unless product **explicitly** approves a palette migration.
+
 ---
 
 ## 0. Philosophy
@@ -69,6 +71,8 @@ Use this as a **ratio guide**. Map each step to your design tool or code tokens 
 - Store colors as **semantic tokens** (e.g. `surface`, `foreground-muted`, `primary`), not as raw hex in components.
 - **One set of token names**; light and dark (or other themes) **reassign values** under the same names.
 - HSL (or OKLCH) **without** the `hsl()` wrapper in variables is a common web pattern for alpha support: components consume `hsl(var(--token) / opacity)`.
+
+**H3 Ink:** The tables below are **reference examples**, not a mandate to retune global CSS. Do not interpret them as instructions to overwrite shared theme files.
 
 ### Semantic roles (light / dark reference values)
 
@@ -334,7 +338,9 @@ Non-negotiable rules:
 
 1. COLORS — Use semantic tokens only (e.g. surface, foreground-muted, border, primary).
    Do not hardcode hex/rgb in feature code. One token set should work across light/dark
-   via theme switching.
+   via theme switching. Do not change global shared CSS/theme color definitions to match
+   Section 2 reference HSLs unless the user explicitly asks for a palette migration; treat
+   the project’s existing theme as the source of truth for color values.
 
 2. TYPOGRAPHY — Respect the type scale and weights: UI labels vs body vs headings.
    Load fonts in one place per platform conventions.

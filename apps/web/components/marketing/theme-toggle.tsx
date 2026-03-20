@@ -19,7 +19,7 @@ export function ThemeToggle() {
         type="button"
         variant="ghost"
         size="icon-sm"
-        className="size-9 rounded-md"
+        className="rounded-md"
         disabled
         aria-hidden
       />
@@ -33,7 +33,7 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon-sm"
-      className="size-9 rounded-md text-muted-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-overlay hover:text-foreground"
+      className="text-muted-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-overlay hover:text-foreground"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >

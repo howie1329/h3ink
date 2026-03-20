@@ -33,9 +33,9 @@ function SectionLabel({
 
 function ManifestoCard() {
   return (
-    <article className="rounded-lg border border-border bg-card p-6 sm:p-7">
+    <article className="rounded-lg border border-border bg-card p-4 sm:p-5">
       <SectionLabel>Product shape</SectionLabel>
-      <p className="mt-5 max-w-md text-lg font-medium leading-relaxed tracking-tight text-foreground">
+      <p className="mt-5 max-w-md text-md font-medium tracking-tight text-foreground">
         Built for people who want their notes to stay portable, readable, and
         close to the filesystem.
       </p>
@@ -90,7 +90,7 @@ function ManifestoCard() {
 function PreviewPanel() {
   return (
     <section
-      className="dark overflow-hidden rounded-lg border border-border shadow-lg dark:shadow-dark-lg"
+      className="dark overflow-hidden rounded-lg border border-border shadow-md"
       aria-label="Product preview"
     >
       <div className="bg-background text-foreground">
@@ -209,19 +209,19 @@ function MarketingCard({
 }
 
 const btnPrimaryLanding =
-  "h-9 rounded-md px-4 text-sm font-medium transition-colors duration-fast ease-snap motion-reduce:transition-none"
+  "h-8 rounded-md px-3 text-sm font-medium transition-colors duration-fast ease-snap motion-reduce:transition-none"
 
 const btnOutlineLanding =
-  "h-9 rounded-md border-border-strong bg-surface px-4 text-sm font-medium text-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-surface-raised hover:border-border"
+  "h-8 rounded-md border-border-strong bg-surface px-3 text-sm font-medium text-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-surface-raised hover:border-border"
 
 export function LandingPage() {
   return (
     <main className="relative overflow-hidden bg-background">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-linear-to-b from-subtle to-transparent" />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col px-5 pb-12 pt-5 sm:px-8 lg:px-10">
+      <div className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-12 pt-5 sm:px-8 lg:px-10">
         <header className="sticky top-4 z-50 mb-10">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-lg border border-border bg-card/80 px-4 py-3 shadow-sm backdrop-blur-md dark:shadow-none">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-lg border border-border bg-card/80 px-4 py-3 backdrop-blur-md">
             <a href="#" className="flex min-w-0 items-center gap-3">
               <Image
                 src="/icon-light.svg"
@@ -239,22 +239,22 @@ export function LandingPage() {
                 </p>
               </div>
             </a>
-            <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
+            <nav className="hidden items-center gap-2 text-sm font-medium md:flex">
               <a
                 href="#features"
-                className="transition-colors duration-fast ease-snap motion-reduce:transition-none hover:text-foreground"
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-overlay hover:text-foreground"
               >
                 Features
               </a>
               <a
                 href="#principles"
-                className="transition-colors duration-fast ease-snap motion-reduce:transition-none hover:text-foreground"
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-overlay hover:text-foreground"
               >
                 Principles
               </a>
               <a
                 href="#roadmap"
-                className="transition-colors duration-fast ease-snap motion-reduce:transition-none hover:text-foreground"
+                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-overlay hover:text-foreground"
               >
                 Roadmap
               </a>
@@ -274,7 +274,7 @@ export function LandingPage() {
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {hero.title}
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-md">
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
               {hero.description}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -335,7 +335,7 @@ export function LandingPage() {
           id="features"
           className="mx-auto grid w-full max-w-6xl gap-6 pb-16 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
         >
-          <MarketingCard className="p-7 sm:p-8">
+          <MarketingCard className="p-4 sm:p-5">
             <SectionLabel>What the first version includes</SectionLabel>
             <h2 className="mt-5 text-3xl font-semibold tracking-tight text-foreground">
               A real first release, shaped around the writing loop.
@@ -350,9 +350,9 @@ export function LandingPage() {
             {featureColumns.map((column) => (
               <MarketingCard
                 key={column.title}
-                className="p-7 transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-surface-raised"
+                className="p-4 transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-surface-raised sm:p-5"
               >
-                <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
                   {column.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -360,7 +360,7 @@ export function LandingPage() {
                 </p>
                 <ul className="mt-6 space-y-3 text-sm leading-relaxed text-foreground">
                   {column.items.map((item) => (
-                    <li key={item} className="flex gap-3">
+                    <li key={item} className="flex gap-1.5">
                       <Check
                         className="mt-0.5 size-4 shrink-0 text-primary"
                         strokeWidth={1.5}
@@ -382,10 +382,10 @@ export function LandingPage() {
           {principles.map((principle) => (
             <MarketingCard
               key={principle.title}
-              className="p-7 transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-surface-raised"
+              className="p-4 transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-surface-raised sm:p-5"
             >
               <SectionLabel>Why H3 Ink</SectionLabel>
-              <h2 className="mt-5 text-2xl font-semibold tracking-tight text-foreground">
+              <h2 className="mt-5 text-xl font-semibold tracking-tight text-foreground">
                 {principle.title}
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -411,7 +411,7 @@ export function LandingPage() {
               <MarketingCard
                 key={column.title}
                 className={cn(
-                  "p-7",
+                  "p-4 sm:p-5",
                   index === 0 &&
                     "border-primary/20 bg-primary-subtle dark:border-primary/30"
                 )}
@@ -424,7 +424,7 @@ export function LandingPage() {
                 </p>
                 <ul className="mt-6 space-y-3 text-sm leading-relaxed text-foreground">
                   {column.items.map((item) => (
-                    <li key={item} className="flex gap-3">
+                    <li key={item} className="flex gap-1.5">
                       <Check
                         className="mt-0.5 size-4 shrink-0 text-primary"
                         strokeWidth={1.5}
@@ -440,7 +440,7 @@ export function LandingPage() {
         </section>
 
         <section id="waitlist" className="mx-auto w-full max-w-6xl pb-16">
-          <div className="overflow-hidden rounded-lg border border-primary/20 bg-primary p-7 text-primary-foreground shadow-md dark:shadow-dark-md sm:p-10">
+          <div className="overflow-hidden rounded-lg border border-primary/20 bg-primary p-4 text-primary-foreground sm:p-8">
             <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
               <div>
                 <SectionLabel className="text-primary-foreground/80">
@@ -458,12 +458,12 @@ export function LandingPage() {
               <div className="rounded-lg border border-primary-foreground/15 bg-primary-foreground/10 p-4 backdrop-blur-sm">
                 <div className="rounded-md border border-primary-foreground/15 bg-primary-foreground/5 p-2">
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <div className="flex h-9 flex-1 items-center rounded-md border border-primary-foreground/15 bg-primary-foreground/10 px-3 text-sm text-primary-foreground/60">
+                    <div className="flex h-8 flex-1 items-center rounded-md border border-primary-foreground/15 bg-primary-foreground/10 px-3 text-sm text-primary-foreground/60">
                       Waitlist email coming soon
                     </div>
                     <Button
                       size="sm"
-                      className="h-9 shrink-0 rounded-md border border-primary-foreground/20 bg-primary-foreground px-4 text-sm font-medium text-primary transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-primary-foreground/90"
+                      className="h-8 shrink-0 rounded-md border border-primary-foreground/20 bg-primary-foreground px-3 text-sm font-medium text-primary transition-colors duration-fast ease-snap motion-reduce:transition-none hover:bg-primary-foreground/90"
                     >
                       Join the waitlist
                     </Button>
@@ -483,7 +483,7 @@ export function LandingPage() {
             <p className="text-sm font-semibold tracking-tight text-foreground">
               H3 Ink
             </p>
-            <p className="mt-2 max-w-md leading-relaxed">
+            <p className="mt-2 max-w-md leading-relaxed text-muted-foreground">
               A desktop-first writing app for local Markdown notes. Calm,
               portable, and intentionally narrow in its first release.
             </p>
