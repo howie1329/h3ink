@@ -1,14 +1,16 @@
-# Design System — H3 / Linear-Inspired
+# Product UI Design System — Dense, Precision App UI
 
-> **Purpose**: Source of truth for all UI/UX decisions across H3 projects.  
-> **Stack**: React · Vite · **Tailwind CSS v4** (CSS-first config) · ShadCN · Lucide React  
-> Feed this file to Codex, Cursor, or any AI tool at the start of every UI task.
+> **Purpose**: Reusable reference for visual and interaction decisions on any product surface (web, desktop shell, mobile, or design handoff).  
+> **Use as**: human documentation, design review checklist, or pasted context for AI-assisted UI work.  
+> **Stack**: **Agnostic.** Implement tokens with your platform’s primitives (CSS variables, design tokens JSON, Swift/Android theme, Figma variables, etc.). Optional web notes appear in *Implementation* callouts.
 
-### Tailwind v4 (no `tailwind.config.ts` for theme)
+---
 
-Theme extensions live in CSS with `@theme` / `@theme inline`, alongside `@import "tailwindcss"`. Color and radius tokens are wired from `:root` / `.dark` HSL variables into utilities (e.g. `--color-surface` → `bg-surface`). Use `@source` in the stylesheet that Tailwind scans so classes in `packages/ui` and app `src/` are included.
+## How to use this document
 
-Dark mode: prefer a CSS variant such as `@custom-variant dark (&:is(.dark *));` and toggle `.dark` on `<html>` (e.g. via `next-themes` or your own store)—do not rely on a `darkMode` key in a JS config file.
+- **Tokens** (colors, type, space, radius, motion) are named for **meaning**, not appearance—so the same names work in light/dark and across platforms.
+- **Rules** state *what* to enforce; *how* you wire them (Tailwind, styled-components, SwiftUI, etc.) is up to your codebase.
+- For AI tasks, paste the **AI instructions** section (end of doc) and point to your project’s actual token file or theme module if you have one.
 
 ---
 
@@ -17,634 +19,345 @@ Dark mode: prefer a CSS variant such as `@custom-variant dark (&:is(.dark *));` 
 - **Precision over decoration.** Every pixel is intentional. If you can remove it, remove it.
 - **Both modes are first-class.** Light and dark are equally polished. Neither is an afterthought.
 - **Density with breathing room.** Pack information tightly, but give the eye a place to rest.
-- **Speed is a feature.** Animations are fast (100–200ms). Nothing lingers.
-- **Systematic consistency.** If a value isn't in this doc, it doesn't exist in the UI.
+- **Speed is a feature.** Animations are short (roughly 100–200ms for primary interactions). Nothing lingers.
+- **Systematic consistency.** If a value isn’t part of the agreed system, it shouldn’t appear in the UI without a deliberate exception.
 
 ---
 
-## 1. Typography — fonts & type scale
+## 1. Typography
 
-**Default stack (Vite + React):** load **Geist** from npm (e.g. Fontsource variable packages) and import them once in your app entry CSS—**not** via `<link>` tags or ad-hoc `@import` URLs in random components.
+### Typefaces
 
-```css
-/* e.g. src/index.css — before or after Tailwind, per package docs */
-@import "@fontsource-variable/geist-sans";
-@import "@fontsource-variable/geist-mono";
-```
+- Prefer **one sans family** for UI and **one monospace family** for code, IDs, and technical values.
+- Load fonts **once** at app or document root (bundler, native font registration, or design system)—avoid scattering ad-hoc imports or duplicate webfont requests.
+- *Example families*: Geist, Inter, system UI stack—choose per brand; consistency matters more than the exact name.
 
-Point Tailwind at those families via `@theme` (see below). The shared UI package may set `--font-sans` / `--font-mono` on `:root` to match.
+### Type scale (reference sizes)
 
-**Optional — Next.js:** you may use `next/font/google` for Geist and apply the generated `variable` classes on `<html>` / `<body>` instead of Fontsource; still map `--font-sans` / `--font-mono` in `@theme` the same way.
+Use this as a **ratio guide**. Map each step to your design tool or code tokens (`text-xs`, `Type.caption`, etc.).
 
-### Tailwind v4 — `fontFamily` + type scale (`@theme`)
+| Token   | Size | Line height | Letter spacing | Typical use              |
+| ------- | ---- | ----------- | -------------- | ------------------------ |
+| 2xs     | 10px | 1.4         | +0.02em        | Rare micro-labels        |
+| xs      | 11px | 1.5         | default        | Meta, timestamps         |
+| sm      | 13px | 1.5         | default        | Body UI, dense tables    |
+| base    | 14px | 1.6         | default        | Default body             |
+| md      | 15px | 1.5         | default        | Slightly emphasized body |
+| lg      | 17px | 1.4         | -0.01em        | Section titles           |
+| xl      | 20px | 1.3         | -0.01em        | Page titles              |
+| 2xl     | 24px | 1.25        | -0.02em        | Hero / major headings    |
+| 3xl     | 30px | 1.2         | -0.02em        | Marketing / large display|
+| 4xl     | 38px | 1.1         | -0.03em        | Marketing only           |
 
-Define families on `:root` (or let Fontsource set them), then expose them to Tailwind’s `font-sans` / `font-mono` utilities:
+### Typography rules
 
-```css
-:root {
-  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
-}
+- Default UI body: **sm**, **normal** weight, **secondary/muted** text color token.
+- Controls (buttons, nav, tabs): **sm**, **medium** weight.
+- Headings: **semibold** (or equivalent), **tight** tracking.
+- ALL CAPS labels: **2xs**, **medium**, **wide** letter spacing—use sparingly.
+- Monospace: code, IDs, version strings, technical values only.
+- No gradient text or heavy text shadows in **application** chrome; reserve those for marketing if at all.
 
-@theme inline {
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-}
-```
-
-@theme {
-  --text-2xs: 10px;
-  --text-2xs--line-height: 1.4;
-  --text-2xs--letter-spacing: 0.02em;
-  --text-xs: 11px;
-  --text-xs--line-height: 1.5;
-  --text-sm: 13px;
-  --text-sm--line-height: 1.5;
-  --text-base: 14px;
-  --text-base--line-height: 1.6;
-  --text-md: 15px;
-  --text-md--line-height: 1.5;
-  --text-lg: 17px;
-  --text-lg--line-height: 1.4;
-  --text-lg--letter-spacing: -0.01em;
-  --text-xl: 20px;
-  --text-xl--line-height: 1.3;
-  --text-xl--letter-spacing: -0.01em;
-  --text-2xl: 24px;
-  --text-2xl--line-height: 1.25;
-  --text-2xl--letter-spacing: -0.02em;
-  --text-3xl: 30px;
-  --text-3xl--line-height: 1.2;
-  --text-3xl--letter-spacing: -0.02em;
-  --text-4xl: 38px;
-  --text-4xl--line-height: 1.1;
-  --text-4xl--letter-spacing: -0.03em;
-}
-```
-
-### Typography Rules
-
-- Default body: `text-sm text-muted-foreground font-normal`
-- UI labels (buttons, nav, tabs): `text-sm font-medium`
-- Headings: `font-semibold tracking-tight`
-- ALL CAPS labels: `text-2xs font-medium tracking-widest uppercase` — use sparingly
-- Mono font (`font-mono`): code, IDs, version strings, technical values only
-- No gradient text or text-shadows in app UI — only in marketing contexts
+*Implementation (web)*: expose `--font-sans` and `--font-mono` on `:root` and reference them in your global styles or utility config.
 
 ---
 
-## 2. Color System
+## 2. Color system
 
-Colors live in your **Tailwind entry CSS** (e.g. app `globals.css` or `packages/ui` `styles.css`) as custom properties (HSL, ShadCN convention). They are consumed exclusively through **Tailwind semantic class names** — never raw hex or CSS vars in components. One class name works in both light and dark mode automatically.
+### Principles
 
-### `globals.css`
+- Store colors as **semantic tokens** (e.g. `surface`, `foreground-muted`, `primary`), not as raw hex in components.
+- **One set of token names**; light and dark (or other themes) **reassign values** under the same names.
+- HSL (or OKLCH) **without** the `hsl()` wrapper in variables is a common web pattern for alpha support: components consume `hsl(var(--token) / opacity)`.
 
-```css
-@layer base {
-  :root {
-    /* ── LIGHT MODE ─────────────────────────────────────────── */
+### Semantic roles (light / dark reference values)
 
-    /* Backgrounds — layered from base to most elevated */
-    --background: 0 0% 100%; /* #ffffff  — app canvas */
-    --background-subtle: 0 0% 98%; /* #fafafa  — page tint */
-    --surface: 0 0% 96%; /* #f5f5f5  — cards, panels */
-    --surface-raised: 0 0% 93%; /* #ededed  — elevated cards */
-    --overlay: 240 5% 90%; /* #e3e3e6  — hover, selected */
+Below, **HSL components only** (e.g. `240 6% 10%`)—adapt to your token pipeline. Comments show approximate hex for communication.
 
-    /* Text */
-    --foreground: 240 6% 10%; /* #17171a  — primary */
-    --foreground-muted: 240 4% 46%; /* #717180  — secondary */
-    --foreground-subtle: 240 3% 68%; /* #ababb4  — tertiary / disabled */
+**Light — backgrounds (shallow → deep elevation)**
 
-    /* Borders */
-    --border: 240 5% 88%; /* #dddde0 */
-    --border-strong: 240 5% 78%; /* #c3c3c8 */
-    --input: 240 5% 88%;
+| Token              | Light HSL        | Note        |
+| ------------------ | ---------------- | ----------- |
+| background         | `0 0% 100%`      | App canvas  |
+| background-subtle  | `0 0% 98%`       | Page tint   |
+| surface            | `0 0% 96%`       | Cards       |
+| surface-raised     | `0 0% 93%`       | Elevated    |
+| overlay            | `240 5% 90%`     | Hover/selected |
 
-    /* Accent / Primary */
-    --primary: 237 56% 57%; /* #5e6ad2 */
-    --primary-foreground: 0 0% 100%;
-    --primary-subtle: 237 56% 95%; /* #eef0fb */
+**Light — text**
 
-    /* ShadCN-required vars */
-    --card: 0 0% 100%;
-    --card-foreground: 240 6% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 6% 10%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 93%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 93%;
-    --accent-foreground: 240 6% 10%;
-    --destructive: 0 72% 51%; /* #d63232 */
-    --destructive-foreground: 0 0% 100%;
-    --ring: 237 56% 57%;
+| Token               | Light HSL   |
+| ------------------- | ----------- |
+| foreground          | `240 6% 10%` |
+| foreground-muted    | `240 4% 46%` |
+| foreground-subtle   | `240 3% 68%` |
 
-    /* Semantic status */
-    --success: 158 55% 42%; /* #3a9e76 */
-    --success-subtle: 158 55% 95%;
-    --warning: 35 90% 48%; /* #e5930d */
-    --warning-subtle: 35 90% 95%;
-    --info: 214 80% 52%; /* #2d7ee0 */
-    --info-subtle: 214 80% 95%;
+**Light — borders & inputs**
 
-    --radius: 6px;
-  }
+| Token         | Light HSL   |
+| ------------- | ----------- |
+| border        | `240 5% 88%` |
+| border-strong | `240 5% 78%` |
+| input         | match border |
 
-  .dark {
-    /* ── DARK MODE ──────────────────────────────────────────── */
+**Light — accent**
 
-    /* Backgrounds */
-    --background: 240 7% 7%; /* #0e0e12  — app canvas */
-    --background-subtle: 240 6% 9%; /* #131317  — page tint */
-    --surface: 240 6% 11%; /* #18181e  — cards, panels */
-    --surface-raised: 240 5% 14%; /* #1f1f26  — elevated cards */
-    --overlay: 240 5% 18%; /* #28282f  — hover, selected */
+| Token            | Light HSL      |
+| ---------------- | -------------- |
+| primary          | `237 56% 57%`  |
+| primary-foreground | `0 0% 100%` |
+| primary-subtle   | `237 56% 95%`  |
 
-    /* Text */
-    --foreground: 240 5% 94%; /* #ededf0  — primary */
-    --foreground-muted: 240 4% 56%; /* #8a8a96  — secondary */
-    --foreground-subtle: 240 3% 36%; /* #585862  — tertiary / disabled */
+**Light — system / destructive**
 
-    /* Borders */
-    --border: 240 5% 18%; /* #28282f */
-    --border-strong: 240 5% 26%; /* #3c3c46 */
-    --input: 240 5% 18%;
+| Token                  | Light HSL     |
+| ---------------------- | ------------- |
+| destructive            | `0 72% 51%`   |
+| destructive-foreground | `0 0% 100%`   |
+| success                | `158 55% 42%` |
+| warning                | `35 90% 48%`  |
+| info                   | `214 80% 52%` |
 
-    /* Accent / Primary — slightly lighter for contrast on dark bg */
-    --primary: 237 55% 67%; /* #7b85dc */
-    --primary-foreground: 240 7% 7%;
-    --primary-subtle: 237 30% 17%; /* #20224a */
+Also define tokens your UI kit expects for **card**, **popover**, **secondary**, **muted**, **accent**, **ring** (focus), each with foreground pairs—mirror the same structure as your component library’s theme contract.
 
-    /* ShadCN-required vars */
-    --card: 240 6% 11%;
-    --card-foreground: 240 5% 94%;
-    --popover: 240 5% 14%;
-    --popover-foreground: 240 5% 94%;
-    --secondary: 240 5% 14%;
-    --secondary-foreground: 240 5% 94%;
-    --muted: 240 5% 14%;
-    --muted-foreground: 240 4% 56%;
-    --accent: 240 5% 18%;
-    --accent-foreground: 240 5% 94%;
-    --destructive: 0 65% 58%; /* #d95050 */
-    --destructive-foreground: 240 5% 94%;
-    --ring: 237 55% 67%;
+**Dark** — repeat the same **names** with adjusted values (example dark canvas `240 7% 7%`, muted text `240 4% 56%`, slightly lighter primary for contrast on dark, etc.). Design light and dark **together**.
 
-    /* Semantic status */
-    --success: 158 45% 52%; /* #4cad89 */
-    --success-subtle: 158 30% 13%;
-    --warning: 35 75% 55%; /* #e0993a */
-    --warning-subtle: 35 40% 13%;
-    --info: 214 70% 62%; /* #5b99e8 */
-    --info-subtle: 214 40% 13%;
-  }
-}
-```
+### Color usage rules
 
-### Tailwind v4 — semantic color utilities (`@theme`)
+- Consume only **semantic** tokens in UI code (`bg-surface`, `Color.surface`, etc.)—never one-off hex in feature code.
+- **Background layering** (shallow → deep): `background` → `background-subtle` → `surface` → `surface-raised` → `overlay`.
+- **Success / warning / destructive / info**: status and feedback only—not decorative fills.
+- **One primary accent** per view; avoid multiple competing accent-colored elements.
 
-Map HSL components from `:root` / `.dark` into Tailwind color tokens. Use `hsl(var(--token) / <alpha-value>)` so opacity modifiers (`bg-primary/90`) work.
-
-```css
-@theme inline {
-  --color-background: hsl(var(--background));
-  --color-subtle: hsl(var(--background-subtle));
-  --color-surface: hsl(var(--surface));
-  --color-surface-raised: hsl(var(--surface-raised));
-  --color-overlay: hsl(var(--overlay));
-
-  --color-foreground: hsl(var(--foreground));
-  --color-foreground-muted: hsl(var(--foreground-muted));
-  --color-foreground-subtle: hsl(var(--foreground-subtle));
-
-  --color-border: hsl(var(--border));
-  --color-border-strong: hsl(var(--border-strong));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-primary-subtle: hsl(var(--primary-subtle));
-
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-success: hsl(var(--success));
-  --color-success-subtle: hsl(var(--success-subtle));
-  --color-warning: hsl(var(--warning));
-  --color-warning-subtle: hsl(var(--warning-subtle));
-  --color-info: hsl(var(--info));
-  --color-info-subtle: hsl(var(--info-subtle));
-}
-```
-
-Utilities: `bg-subtle`, `bg-surface`, `text-foreground-muted`, `text-foreground-subtle`, `border-border-strong`, `bg-primary-subtle`, `text-success`, `bg-success-subtle`, etc., per Tailwind v4 naming (`--color-{name}` → `bg-{name}`, `text-{name}`, …). Align any ShadCN-generated `--color-*` entries so they are not duplicated or conflicting.
-
-### Color Usage Rules
-
-- **Always use semantic Tailwind class names** — `bg-surface`, `text-muted-foreground`, `border-border`, etc.
-- Never write `bg-[#18181e]`, `text-[#8a8a96]`, or inline `var(--foreground)` in components.
-- Background layering order (shallowest → deepest): `background → subtle → surface → surface-raised → overlay` (classes: `bg-background`, `bg-subtle`, `bg-surface`, …)
-- Semantic colors (`success`, `warning`, `destructive`, `info`) are for status indicators only — not decorative.
-- One `primary` accent per view. Do not stack multiple accent-colored elements competing for attention.
+*Implementation (web)*: define `:root` and `.dark` (or `[data-theme="dark"]`) with the same variable names; map them to utilities or components in one place.
 
 ---
 
 ## 3. Spacing
 
-Tailwind's default spacing scale (base: 4px). No arbitrary values.
+Base unit: **4px**. All spacing should be **multiples of 4** (or your design tool’s equivalent grid).
 
-| Token   | px   | Usage                              |
-| ------- | ---- | ---------------------------------- |
-| `p-0.5` | 2px  | Icon nudge, micro gaps             |
-| `p-1`   | 4px  | Dense internal padding             |
-| `p-1.5` | 6px  | Compact badge / chip padding       |
-| `p-2`   | 8px  | Button vertical, list item padding |
-| `p-3`   | 12px | Button horizontal, input padding   |
-| `p-4`   | 16px | Card padding, section gap          |
-| `p-5`   | 20px | Comfortable card padding           |
-| `p-6`   | 24px | Section spacing                    |
-| `p-8`   | 32px | Page-level padding                 |
-| `p-10`  | 40px | Large section breaks               |
+| Step | px  | Typical use                          |
+| ---- | --- | ------------------------------------ |
+| 0.5× | 2   | Icon nudge, micro gaps               |
+| 1×   | 4   | Dense internal padding               |
+| 1.5× | 6   | Compact badge / chip               |
+| 2×   | 8   | Button vertical, list row padding    |
+| 3×   | 12  | Button horizontal, input padding     |
+| 4×   | 16  | Card padding, section gaps           |
+| 5×   | 20  | Comfortable card padding           |
+| 6×   | 24  | Section spacing                      |
+| 8×   | 32  | Page padding                         |
+| 10×  | 40  | Large section breaks                 |
 
-Never use arbitrary values: `p-[7px]`, `mt-[11px]`, `gap-[18px]`.
+Avoid one-off values like `7px` or `11px` unless documented as an exception.
 
 ---
 
-## 4. Border Radius
+## 4. Border radius
 
-Set `--radius: 6px` in `:root`. Extend Tailwind v4 radius tokens in CSS (maps to that base):
+- **Base radius**: **6px** (single token, e.g. `--radius`).
+- Derive smaller/larger steps from the base, e.g.  
+  **sm** = base − 2px, **md** = base, **lg** = base + 2px, **xl** = base + 6px, **full** = pill.
 
-```css
-@theme {
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 6px);
-  --radius-full: 9999px;
-}
-```
+**Application**
 
-Rules:
+- Buttons, inputs: **md**
+- Cards, dropdowns, sheets: **lg**
+- Modals, command palettes: **xl**
+- Badges: **sm** or **full**
 
-- Buttons, inputs, selects: `rounded-md`
-- Cards, dropdowns, sheets: `rounded-lg`
-- Modals, command palettes: `rounded-xl`
-- Badges, chips: `rounded-sm` or `rounded-full`
-- Never mix radius sizes within the same component group
+Do not mix radius sizes within the same visual component group.
 
 ---
 
 ## 5. Elevation
 
-Depth is communicated through **background layering + borders**, not shadows. Shadows are reserved only for elements that truly float above the page.
+- Prefer **layered backgrounds + borders** for in-app depth.
+- **Shadows** only for elements that truly float (dropdowns, popovers, modals).
 
-```css
-@theme {
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
-  --shadow-dark-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-dark-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-```
+Example shadow tokens (tune per theme):
 
-- Surface cards: no shadow — use `border border-border` only
-- Dropdowns, tooltips: `shadow-md dark:shadow-dark-md`
-- Modals, command palettes: `shadow-lg dark:shadow-dark-lg`
+- **sm**: subtle lift for small floats  
+- **md**: dropdowns, tooltips  
+- **lg**: modals, large overlays  
+- Dark theme often needs **stronger** shadow opacity for the same perceived separation.
+
+Surface cards: **border** only, no shadow.
 
 ---
 
-## 6. Motion & Animation
+## 6. Motion & animation
 
-```css
-@theme {
-  --duration-fast: 100ms;
-  --duration-normal: 150ms;
-  --duration-slow: 200ms;
-  --duration-slower: 300ms;
-  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-```
+### Durations (reference)
 
-Common patterns:
+| Token   | Duration | Use                    |
+| ------- | -------- | ---------------------- |
+| fast    | 100ms    | Hover, press, color     |
+| normal  | 150ms    | Default transitions    |
+| slow    | 200ms    | Panels, larger moves    |
+| slower  | 300ms    | Sparingly               |
 
-```tsx
-// Standard hover
-"transition-colors duration-fast hover:bg-overlay";
+### Easing (reference)
 
-// Button active press
-"transition-[background-color,opacity] duration-fast active:opacity-75";
+- **Snap**: `cubic-bezier(0.16, 1, 0.3, 1)` — crisp UI motion  
+- **Spring** (light): `cubic-bezier(0.34, 1.56, 0.64, 1)` — subtle overshoot
 
-// Modal enter (tailwindcss-animate or Radix)
-"animate-in fade-in-0 zoom-in-95 duration-slow";
+### Rules
 
-// Modal exit
-"animate-out fade-out-0 zoom-out-95 duration-normal";
-
-// Drawer slide-in
-"animate-in slide-in-from-left duration-slow";
-```
-
-Rules:
-
-- Every interactive element has a hover/active transition — never fully static
-- Always specify what you're transitioning: `transition-colors`, `transition-[transform,opacity]` — never `transition-all`
-- Modal/panel enter is slightly slower than exit
-- Always add `motion-reduce:transition-none motion-reduce:animate-none` on animated elements
+- Every interactive control has **hover** and/or **active** feedback—not a completely static appearance.
+- Animate **specific properties** (opacity, transform, colors)—avoid blanket “animate everything.”
+- **Enter** slightly slower than **exit** for overlays when both exist.
+- Respect **reduced motion**: disable or shorten non-essential animation when the user prefers reduced motion (`prefers-reduced-motion`, platform accessibility settings).
 
 ---
 
-## 7. Component Patterns
+## 7. Component patterns (specifications)
 
-All class strings below work in both light and dark mode without any `dark:` prefix on color tokens.
+Describe implementations using your stack’s tokens. Below: **intent** and **measurements**.
 
 ### Buttons
 
-```tsx
-// Primary
-"bg-primary text-primary-foreground hover:bg-primary/90
- rounded-md px-3 h-8 text-sm font-medium
- transition-colors duration-fast ease-snap"
+- **Primary**: filled primary background, primary foreground text; hover slightly darker/lighter or lower opacity; **md** radius; height **32px** default (also support **28px** compact, **36px** comfortable); horizontal padding **12px**; label **sm**, **medium**.
+- **Secondary**: surface background, border, foreground; hover raises surface / strengthens border.
+- **Ghost**: transparent; muted text; hover uses **overlay** background and full foreground.
+- **Destructive (soft)**: low-contrast destructive tint background, destructive text; hover increases tint.
 
-// Secondary
-"bg-surface border border-border text-foreground
- hover:bg-surface-raised hover:border-border-strong
- rounded-md px-3 h-8 text-sm font-medium
- transition-colors duration-fast ease-snap"
+### Inputs
 
-// Ghost
-"text-muted-foreground hover:bg-overlay hover:text-foreground
- rounded-md px-3 h-8 text-sm font-medium
- transition-colors duration-fast ease-snap"
+- Background **background**, border **input**, text **foreground**, placeholder **foreground-subtle**; **md** radius; height **32px** default; horizontal padding **12px**; **sm** text.
+- Focus: visible ring using **ring** token (or platform focus style).
+- Error: **destructive** border and subdued destructive ring.
 
-// Destructive
-"bg-destructive/10 text-destructive hover:bg-destructive/20
- rounded-md px-3 h-8 text-sm font-medium
- transition-colors duration-fast ease-snap"
-```
+### Cards
 
-Heights: `h-7` compact · `h-8` default · `h-9` comfortable
+- **Static**: **card** background, **border**, **lg** radius, padding **16px**, **card-foreground** text.
+- **Interactive**: same + hover to **surface-raised** (or equivalent), cursor pointer, **fast** color transition.
+- **Floating** (popover/modal shell): **popover** background, **xl** radius, **md** shadow (stronger in dark).
 
-### Input / Textarea
+### Badges / tags
 
-```tsx
-"bg-background border border-input text-foreground
- placeholder:text-foreground-subtle
- rounded-md px-3 h-8 text-sm w-full
- focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
- transition-[border-color,box-shadow] duration-fast ease-snap"
-```
+- **sm** radius or pill; padding ~**4px × 2px** vertical/horizontal scale; **xs** text, **medium** weight.
+- Variants: neutral **overlay** + muted text; primary/success/warning/destructive use **10%** tint backgrounds with matching text tokens where supported.
 
-Error state: add `border-destructive focus-visible:ring-destructive/50`
+### Nav item (sidebar)
 
-### Card
+- Row height **32px**, horizontal padding **12px**, **sm** text; default **muted**; hover **overlay** + full foreground; active **medium** weight, **foreground**, **overlay** background.
 
-```tsx
-// Static
-"bg-card border border-border rounded-lg p-4 text-card-foreground"
+### Dividers
 
-// Interactive
-"bg-card border border-border rounded-lg p-4 text-card-foreground
- hover:bg-surface-raised transition-colors duration-fast cursor-pointer"
+- Horizontal: top border **border**, vertical margin from spacing scale.  
+- Vertical: left border **border**, horizontal margin, stretch to fill row.
 
-// Floating (modal, popover, dropdown)
-"bg-popover border border-border rounded-xl
- shadow-md dark:shadow-dark-md text-popover-foreground"
-```
+### Empty state
 
-### Badge / Tag
-
-```tsx
-// Neutral
-"bg-overlay text-muted-foreground rounded-sm px-2 py-0.5 text-xs font-medium";
-
-// Primary
-"bg-primary/10 text-primary rounded-sm px-2 py-0.5 text-xs font-medium";
-
-// Success
-"bg-success/10 text-success rounded-sm px-2 py-0.5 text-xs font-medium";
-
-// Warning
-"bg-warning/10 text-warning rounded-sm px-2 py-0.5 text-xs font-medium";
-
-// Destructive
-"bg-destructive/10 text-destructive rounded-sm px-2 py-0.5 text-xs font-medium";
-```
-
-### Sidebar Nav Item
-
-```tsx
-// Default
-"flex items-center gap-2 px-3 h-8 rounded-md text-sm
- text-muted-foreground hover:bg-overlay hover:text-foreground
- transition-colors duration-fast ease-snap cursor-pointer"
-
-// Active
-"flex items-center gap-2 px-3 h-8 rounded-md text-sm
- font-medium text-foreground bg-overlay cursor-pointer"
-```
-
-### Divider
-
-```tsx
-<div className="border-t border-border my-1" />
-<div className="border-l border-border mx-2 self-stretch" />
-```
-
-### Empty State
-
-```tsx
-<div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-  <Icon size={32} className="text-foreground-subtle" strokeWidth={1.5} />
-  <p className="text-sm font-medium text-foreground">Nothing here yet</p>
-  <p className="text-sm text-muted-foreground max-w-xs">
-    Supporting description goes here.
-  </p>
-</div>
-```
+- Centered column; vertical padding **64px** class equivalent; icon ~**32px**, **foreground-subtle**; title **sm** **medium**; description **sm** **muted**, max width ~**20rem**.
 
 ---
 
 ## 8. Iconography
 
-- Library: **`lucide-react`** exclusively — never mix icon libraries in the same project
-- Default `strokeWidth`: `1.5`
-- Sizes:
-  - `size={14}` — inline / dense list items
-  - `size={16}` — standard UI (default)
-  - `size={18}` — prominent actions, sidebar icons
-  - `size={20}` — empty states, feature callouts
-- Default color: `text-muted-foreground` → `text-foreground` on hover/active
-- Icons in buttons: `gap-1.5` between icon and label text
-- Icon-only buttons: must have `aria-label`
+- Use **one icon family** per product for consistency (e.g. Lucide, SF Symbols, Material Symbols).
+- Default **stroke** weight ~**1.5** (or platform default that reads similarly).
+- Sizes: **14** inline dense, **16** default UI, **18** sidebar / prominent, **20** empty states.
+- Default color: **muted**; **foreground** on hover/active when part of a control.
+- Icon + label: **6px** gap (1.5× base unit).
+- Icon-only controls: accessible **name** / **label** (ARIA, content description, Tooltip).
 
 ---
 
 ## 9. Layout
 
-### Primary Pattern: Sidebar + Main
+### Sidebar + main (common app shell)
 
-```tsx
-<div className="flex h-screen bg-background">
-  <aside className="w-56 shrink-0 border-r border-border bg-subtle flex flex-col">
-    {/* sidebar nav — w-56 (14rem) ≈ 224px; adjust with standard spacing only */}
-  </aside>
-  <main className="flex-1 overflow-y-auto">
-    <div className="max-w-4xl mx-auto px-8 py-6">{/* content */}</div>
-  </main>
-</div>
-```
+- Full viewport height; canvas **background**.
+- Sidebar: fixed width ~**224px** (adjust only on spacing grid); **subtle** background; **border** on main-edge; column layout.
+- Main: flex grow, scroll vertically; inner content **max-width** + horizontal padding from scale (e.g. **32px** horizontal, **24px** vertical).
 
-Content max-widths:
+### Content max-widths (reference)
 
-- Text / reading views: `max-w-2xl` (672px)
-- Forms, settings: `max-w-xl` (560px)
-- Dashboards, mixed layouts: `max-w-4xl` (896px)
-- Data tables: full width, no max
+- Reading-heavy: ~**672px**
+- Forms / settings: ~**560px**
+- Dashboards / mixed: ~**896px**
+- Wide tables: full width
 
-### Z-Index Scale
+### Z-index scale (conceptual)
 
-```css
-@theme {
-  --z-base: 0;
-  --z-raised: 10;
-  --z-dropdown: 100;
-  --z-modal: 200;
-  --z-toast: 300;
-  --z-tooltip: 400;
-}
-```
-
-Utilities match your `@theme` keys (e.g. `--z-modal` → `z-modal` in Tailwind v4). When unsure, use the default numeric scale (`z-10`, `z-50`, …).
+Define a **small fixed ladder** and reuse names project-wide, e.g. base → raised → dropdown → sticky header → modal → toast → tooltip. Avoid arbitrary large numbers.
 
 ---
 
-## 10. Theme Switching
+## 10. Theming
 
-Use **`next-themes`** (works with Vite + React) for system preference and a user toggle. Wrap the root in `ThemeProvider` (e.g. in `main.tsx` next to `createRoot`).
-
-```tsx
-// e.g. src/main.tsx
-import { ThemeProvider } from "next-themes";
-
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <App />
-    </ThemeProvider>
-  </StrictMode>
-);
-```
-
-In CSS, define the dark variant for Tailwind v4 (ShadCN-style):
-
-```css
-@custom-variant dark (&:is(.dark *));
-```
-
-Toggle:
-
-```tsx
-import { useTheme } from "next-themes";
-const { theme, setTheme } = useTheme();
-// cycle: 'system' → 'light' → 'dark'
-```
-
-Notes:
-
-- `attribute="class"` adds `.dark` to `<html>` — pairs with `@custom-variant dark` above (no `darkMode` key in a JS config).
-- `defaultTheme="system"` respects OS preference on first visit
-- `disableTransitionOnChange` prevents background color flash on mode switch
+- Support **light**, **dark**, and ideally **system** default.
+- Toggle by setting a **class or data attribute** on the document root (web) or theme object (native)—not scattered per-widget.
+- When switching theme, optionally **disable transitions** for one frame to avoid flashes.
+- Use semantic tokens so **most** UI needs **no** per-mode color branches; reserve mode-specific rules for shadows, images, or maps.
 
 ---
 
-## 11. ShadCN Integration
+## 11. Integrating a component library
 
-```bash
-npx shadcn@latest init
-# Style: New York | Base color: Neutral | CSS variables: Yes
-# Tailwind v4: CLI targets CSS-first setup; theme lives in your stylesheet, not tailwind.config.js
-```
+If you use Material, shadcn/ui, Chakra, SwiftUI, Compose, etc.:
 
-After init:
-
-1. Replace the generated `:root` / `.dark` blocks with the palette from Section 2 and merge `@theme` / `@theme inline` mappings (Section 2–6) so semantic utilities match this doc.
-2. Set `--radius: 6px` — map radius tokens in `@theme` (Section 4) so `rounded-md` / `rounded-lg` / `rounded-xl` match the system.
-3. ShadCN components (`bg-card`, `text-muted-foreground`, `border-input`, etc.) resolve to your tokens via shared CSS variables.
+1. Map this doc’s **semantic names** to the library’s theme API or CSS variables.
+2. Replace generated palettes with your **Section 2** values while keeping the library’s **required** token names.
+3. Keep **radius**, **spacing**, and **motion** tokens aligned with Sections 3–6 so custom and stock components match.
 
 ---
 
-## 12. Do / Don't
+## 12. Do / don’t
 
-| ✅ Do                                                           | ❌ Don't                                            |
-| --------------------------------------------------------------- | --------------------------------------------------- |
-| `bg-surface`, `text-muted-foreground` — semantic tokens         | `bg-[#18181e]`, `text-[#8a8a96]` — hardcoded values |
-| Design `:root` (light) and `.dark` together                     | Design dark-only, patch light mode after            |
-| Fontsource (Vite) or `next/font` (Next) once in entry layout/CSS | `<link>` tags or scattered `@import` for fonts      |
-| Layer backgrounds for depth                                     | Use shadows for in-app surface elevation            |
-| `transition-colors duration-fast` — explicit                    | `transition-all`                                    |
-| `motion-reduce:transition-none` on all animated elements        | Ignore reduced motion preference                    |
-| Tailwind default spacing (`p-3`, `gap-4`)                       | Arbitrary values (`p-[7px]`, `mt-[11px]`)           |
-| `lucide-react` only, `strokeWidth={1.5}`                        | Mix icon libraries                                  |
-| `rounded-md` buttons · `rounded-lg` cards · `rounded-xl` modals | Inconsistent radius                                 |
-| `text-sm font-medium` for UI labels                             | Heavy weights on body copy                          |
-| One `primary` accent per view                                   | Multiple competing accent-colored elements          |
+| Do | Don’t |
+| -- | ----- |
+| Semantic color/spacing/radius tokens | Hardcoded hex or raw values in feature UI |
+| Design light and dark together | Dark-only with light as an afterthought |
+| Single font loading strategy | Duplicate or scattered font imports |
+| Layered surfaces + borders for in-app depth | Heavy shadows on every card |
+| Explicit property animations + short durations | Long, vague, or “animate all” |
+| Respect reduced motion | Ignore system accessibility settings |
+| Grid-aligned spacing | Random pixel gaps |
+| One icon system, consistent sizes | Mixed icon families |
+| Consistent radius per component type | Mixed radii in one component family |
+| One strong accent per view | Many competing accent colors |
 
 ---
 
-## 13. AI Coding Instructions
+## 13. AI coding instructions
 
-Paste this block at the top of every Codex / Cursor task involving UI:
+Paste and adapt bracketed placeholders to your repo:
 
 ```
-Reference DESIGN_SYSTEM.md as the source of truth for all styling. Non-negotiable rules:
+Use [PATH_OR_NAME_TO_THEME_TOKENS] as the source of truth for styling.
 
-1. COLORS — Tailwind semantic tokens only: bg-surface, text-muted-foreground, border-border,
-   bg-primary, text-foreground, etc. Never hardcode hex values or write var(--x) in components.
-   A single token works in both light and dark mode automatically.
+Non-negotiable rules:
 
-2. FONTS — Geist loaded once via Fontsource in entry CSS (Vite) or next/font (Next).
-   --font-sans / --font-mono on :root; @theme maps font-sans / font-mono. No extra <link> fonts.
+1. COLORS — Use semantic tokens only (e.g. surface, foreground-muted, border, primary).
+   Do not hardcode hex/rgb in feature code. One token set should work across light/dark
+   via theme switching.
 
-3. BOTH MODES — Every component must look correct in light AND dark mode. Semantic tokens
-   switch automatically. Only use dark: prefix for structural things (shadows, images).
-   Never use dark: for color tokens that already switch via CSS vars.
+2. TYPOGRAPHY — Respect the type scale and weights: UI labels vs body vs headings.
+   Load fonts in one place per platform conventions.
 
-4. SPACING — Tailwind default scale only. No arbitrary values (p-[7px] is forbidden).
+3. THEMES — Every screen must be coherent in light AND dark (or your supported themes).
+   Prefer semantic tokens over per-mode color forks except for shadows/media.
 
-5. TRANSITIONS — Always specify the property: transition-colors, transition-[transform,opacity].
-   Use duration-fast (100ms) for interactions, duration-normal (150ms) for most transitions.
-   Never use transition-all. Add motion-reduce:transition-none on all animated elements.
+4. SPACING — Use the agreed spacing grid (e.g. 4px base). Avoid arbitrary one-off values.
 
-6. ICONS — lucide-react only. Default: size={16} strokeWidth={1.5}.
+5. MOTION — Short interactions (~100–200ms); animate specific properties; honor reduced motion.
 
-7. RADIUS — rounded-md for buttons/inputs, rounded-lg for cards/panels, rounded-xl for modals.
+6. ICONS — Single icon set; consistent sizes; accessible names for icon-only controls.
 
-8. TAILWIND v4 — Theme in CSS (@theme, @source). No tailwind.config theme duplication.
+7. RADIUS — Apply the radius ladder consistently (controls vs cards vs modals).
 
-9. SHADCN — New York style, neutral base; CSS variables match Section 2.
+8. COMPONENTS — Match the component specifications in the design reference (buttons,
+   inputs, cards, nav) unless the task explicitly changes them.
 ```
+
+---
 
 ## Inspiration
 
-1. docs/design system/images/Linear Web 0.png
-2. docs/design system/images/Linear Web 68.png
+- Linear-style **dense, precise** product UI: neutral surfaces, single accent, fast motion, strong type hierarchy.
+
+If you keep project-specific mood boards, link or name them in your own README; this file stays **portable**.
