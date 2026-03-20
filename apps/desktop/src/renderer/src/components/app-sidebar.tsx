@@ -35,7 +35,7 @@ export function AppSidebar({
   return (
     <Sidebar
       collapsible="offcanvas"
-      className="border-r border-sidebar-border/70 bg-sidebar/95 backdrop-blur-xl"
+      className="border-r border-sidebar-border bg-sidebar"
     >
       <SidebarHeader className="gap-2 px-3 pb-2 pt-3">
         <Button
@@ -43,14 +43,14 @@ export function AppSidebar({
           onClick={onGoHome}
           variant="ghost"
           size="compact"
-          className="h-8 w-full justify-start gap-2 px-2 text-foreground/80 hover:text-foreground"
+          className="h-8 w-full justify-start gap-2 px-3 text-foreground/80 hover:text-foreground"
         >
-          <img src={appLogo} alt="H3 Ink logo" className="size-6 rounded-md object-cover" />
+          <img src={appLogo} alt="H3 Ink logo" className="size-6 shrink-0 rounded-md object-cover" />
           <div className="min-w-0">
-            <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <p className="text-2xs font-medium tracking-widest text-muted-foreground uppercase">
               H3 Ink
             </p>
-            <p className="truncate text-[0.88rem] text-foreground/78">{saveLabel}</p>
+            <p className="truncate text-sm text-foreground/80">{saveLabel}</p>
           </div>
         </Button>
       </SidebarHeader>
@@ -68,13 +68,13 @@ export function AppSidebar({
               }}
               variant="ghost"
               size="compact"
-              className="mb-2 w-full justify-start gap-2 px-3 text-foreground/76 hover:text-foreground"
+              className="mb-2 w-full justify-start gap-1.5 px-3 text-foreground/80 hover:text-foreground"
             >
-              <HugeiconsIcon icon={Add01Icon} className="size-4 shrink-0" strokeWidth={1.8} />
+              <HugeiconsIcon icon={Add01Icon} className="size-4 shrink-0" strokeWidth={1.5} />
               <span>New Note</span>
             </Button>
 
-            <p className="px-3 pt-3 text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            <p className="px-3 pt-3 text-2xs font-medium tracking-widest text-muted-foreground uppercase">
               Recent Files
             </p>
             <SidebarMenu className="mt-2 gap-0">
@@ -94,13 +94,11 @@ export function AppSidebar({
                         }
                       }}
                       size="compact"
-                      className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
+                      className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground data-[active=true]:font-medium"
                     >
                       <div className="min-w-0">
-                        <div className="truncate">{note.title}</div>
-                        <div className="truncate text-[0.72rem] text-muted-foreground">
-                          {note.path}
-                        </div>
+                        <div className="truncate text-sm">{note.title}</div>
+                        <div className="truncate text-xs text-muted-foreground">{note.path}</div>
                       </div>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -117,7 +115,7 @@ export function AppSidebar({
           variant="ghost"
           size="compact"
           onClick={onOpenSettings}
-          className="w-full justify-start px-3 text-foreground/76 hover:text-foreground"
+          className="w-full justify-start px-3 text-foreground/80 hover:text-foreground"
         >
           Settings
         </Button>
@@ -126,7 +124,7 @@ export function AppSidebar({
           variant="ghost"
           size="compact"
           onClick={onToggleTheme}
-          className="w-full justify-start px-3 text-foreground/76 hover:text-foreground"
+          className="w-full justify-start px-3 text-foreground/80 hover:text-foreground"
         >
           {isDarkMode ? 'Light Mode' : 'Dark Mode'}
         </Button>

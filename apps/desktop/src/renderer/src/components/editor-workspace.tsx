@@ -26,24 +26,24 @@ export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React
 
   return (
     <>
-      <header className="flex items-center justify-between border-b border-border/70 px-4 py-2.5 md:px-6">
+      <header className="flex items-center justify-between border-b border-border px-4 py-2 md:px-6">
         <div className="min-w-0">
-          <p className="truncate text-[0.82rem] text-foreground/88">{document.title}</p>
-          <p className="truncate text-[0.72rem] text-muted-foreground">
+          <p className="truncate text-sm font-medium text-foreground">{document.title}</p>
+          <p className="truncate text-xs text-muted-foreground">
             {document.filePath ?? defaultNotesPath ?? 'Draft note'}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button type="button" variant="outline" size="compact" onClick={() => void openFile()}>
-            <HugeiconsIcon icon={FolderOpenIcon} data-icon="inline-start" strokeWidth={1.8} />
+            <HugeiconsIcon icon={FolderOpenIcon} data-icon="inline-start" strokeWidth={1.5} />
             Open
           </Button>
           <Button type="button" variant="outline" size="compact" onClick={() => void saveAs()}>
-            <HugeiconsIcon icon={SaveEnergy01Icon} data-icon="inline-start" strokeWidth={1.8} />
+            <HugeiconsIcon icon={SaveEnergy01Icon} data-icon="inline-start" strokeWidth={1.5} />
             Save As
           </Button>
           <Button type="button" size="compact" onClick={() => void saveNow()}>
-            <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.8} />
+            <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.5} />
             Save
           </Button>
           {document.filePath ? (
@@ -66,7 +66,7 @@ export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React
       </header>
 
       <div className="flex h-full flex-1 flex-col px-4 py-4 md:px-6">
-        <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border/60 bg-card/35 px-4 py-3 text-sm text-muted-foreground">
+        <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           <span>Status: {ready ? saveLabel : 'Loading'}</span>
           {import.meta.env.DEV ? (
             <>
@@ -87,13 +87,13 @@ export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React
           onChange={updateContent}
         />
 
-        <div className="mt-3 rounded-2xl border border-border/60 bg-card/35 px-4 py-3 text-sm text-muted-foreground">
+        <div className="mt-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           H3 Ink edits supported Markdown in TipTap and saves back to `.md`. Drafts stay in memory
           until `Save As`.
         </div>
 
         {errorMessage ? (
-          <div className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {errorMessage}
           </div>
         ) : null}

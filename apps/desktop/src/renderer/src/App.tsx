@@ -40,7 +40,7 @@ function AppShell(): React.JSX.Element {
             onOpenFile={() => void handleOpenFile()}
           />
           {errorMessage ? (
-            <div className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {errorMessage}
             </div>
           ) : null}
@@ -52,9 +52,9 @@ function AppShell(): React.JSX.Element {
   }
 
   return (
-    <div className={`min-h-[100dvh] bg-transparent text-foreground ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-[100dvh] bg-background text-foreground ${isDarkMode ? 'dark' : ''}`}>
       <SidebarProvider defaultOpen>
-        <div className="flex min-h-[100dvh] w-full bg-transparent">
+        <div className="flex min-h-[100dvh] w-full bg-background">
           <AppSidebar
             isDarkMode={isDarkMode}
             onGoHome={() => setScreen('home')}
@@ -63,7 +63,7 @@ function AppShell(): React.JSX.Element {
             onToggleTheme={() => setIsDarkMode((current) => !current)}
           />
 
-          <SidebarInset className="bg-background/70">{renderScreen()}</SidebarInset>
+          <SidebarInset className="bg-background">{renderScreen()}</SidebarInset>
         </div>
       </SidebarProvider>
     </div>

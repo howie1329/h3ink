@@ -14,7 +14,7 @@ type HomeWorkspaceProps = {
 
 export function HomeWorkspace({ onCreateNote, onOpenFile }: HomeWorkspaceProps): React.JSX.Element {
   return (
-    <Empty className="min-h-[calc(100vh-13rem)] rounded-[1.75rem] border border-border/70 bg-card/45">
+    <Empty className="min-h-[calc(100vh-13rem)] rounded-lg border border-border bg-card">
       <EmptyHeader>
         <EmptyTitle className="text-xl">Welcome to H3 Ink</EmptyTitle>
         <EmptyDescription className="max-w-md text-sm">

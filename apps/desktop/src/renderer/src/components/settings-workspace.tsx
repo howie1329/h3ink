@@ -13,7 +13,7 @@ type SettingsWorkspaceProps = {
 
 export function SettingsWorkspace({ onBack }: SettingsWorkspaceProps): React.JSX.Element {
   return (
-    <Empty className="min-h-[calc(100vh-13rem)] rounded-[1.75rem] border border-border/70 bg-card/45">
+    <Empty className="min-h-[calc(100vh-13rem)] rounded-lg border border-border bg-card">
       <EmptyHeader>
         <EmptyTitle className="text-xl">Settings</EmptyTitle>
         <EmptyDescription className="max-w-md text-sm">
