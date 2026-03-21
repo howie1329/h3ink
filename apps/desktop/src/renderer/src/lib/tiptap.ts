@@ -1,4 +1,5 @@
 import Link from '@tiptap/extension-link'
+import Underline from '@tiptap/extension-underline'
 import { Markdown } from '@tiptap/markdown'
 import StarterKit from '@tiptap/starter-kit'
 
@@ -10,6 +11,7 @@ export const h3InkEditorExtensions = [
     horizontalRule: false,
     strike: false
   }),
+  Underline,
   Link.configure({
     autolink: true,
     defaultProtocol: 'https',
