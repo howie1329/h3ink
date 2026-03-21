@@ -20,8 +20,8 @@ export function MarkdownEditor({
     contentType: 'markdown',
     editorProps: {
       attributes: {
-        class: 'h3ink-editor min-h-[calc(100vh-13.75rem)] w-full outline-none',
-        'data-placeholder': 'Start writing. Save As when you want to create a Markdown file.'
+        class: 'h3ink-editor min-h-full w-full min-w-0 outline-none',
+        'data-placeholder': 'Start writing. Save from the sidebar or header when ready.'
       }
     },
     onCreate: ({ editor }) => {
@@ -45,8 +45,8 @@ export function MarkdownEditor({
   }, [editor, onHydrate, value])
 
   return (
-    <div className="rounded-[1.75rem] border border-border/70 bg-card/50 p-3 shadow-[0_10px_40px_rgba(0,0,0,0.14)]">
-      <div className="rounded-[1.3rem] border border-border/70 bg-background/85 px-5 py-4">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
     </div>
