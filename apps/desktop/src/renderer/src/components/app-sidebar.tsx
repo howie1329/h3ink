@@ -1,7 +1,14 @@
-import { Add01Icon } from '@hugeicons/core-free-icons'
+import { Add01Icon, MoreHorizontalIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import appLogo from '../../../../resources/icon-light.png'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import {
   Sidebar,
   SidebarContent,
@@ -10,6 +17,7 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar'
@@ -21,6 +29,7 @@ type AppSidebarProps = {
   onGoHome: () => void
   onOpenSettings: () => void
   onNavigateToEditor: () => void
+  onDeletedActiveNote?: () => void
 }
 
 export function AppSidebar({
@@ -28,15 +37,22 @@ export function AppSidebar({
   onToggleTheme,
   onGoHome,
   onOpenSettings,
-  onNavigateToEditor
+  onNavigateToEditor,
+  onDeletedActiveNote
 }: AppSidebarProps): React.JSX.Element {
-  const { document, recentFiles, saveLabel, createNewNote, loadRecentFile } = useDocumentSession()
+  const {
+    document,
+    recentFiles,
+    saveLabel,
+    createNewNote,
+    loadRecentFile,
+    saveNow,
+    saveAs,
+    deleteNoteByPath
+  } = useDocumentSession()
 
   return (
-    <Sidebar
-      collapsible="offcanvas"
-      className="border-r border-sidebar-border bg-sidebar"
-    >
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border bg-sidebar">
       <SidebarHeader className="gap-2 px-3 pb-2 pt-3">
         <Button
           type="button"
@@ -45,7 +61,11 @@ export function AppSidebar({
           size="compact"
           className="h-8 w-full justify-start gap-2 px-3 text-foreground/80 hover:text-foreground"
         >
-          <img src={appLogo} alt="H3 Ink logo" className="size-6 shrink-0 rounded-md object-cover" />
+          <img
+            src={appLogo}
+            alt="H3 Ink logo"
+            className="size-6 shrink-0 rounded-md object-cover"
+          />
           <div className="min-w-0">
             <p className="text-2xs font-medium tracking-widest text-muted-foreground uppercase">
               H3 Ink
@@ -77,32 +97,83 @@ export function AppSidebar({
             <p className="px-3 pt-3 text-2xs font-medium tracking-widest text-muted-foreground uppercase">
               Recent Files
             </p>
-            <SidebarMenu className="mt-2 gap-0">
+            <SidebarMenu className="mt-1.5 gap-0">
               {recentFiles.length === 0 ? (
                 <SidebarMenuItem>
-                  <div className="px-3 py-2 text-sm text-muted-foreground">No saved notes yet.</div>
+                  <div className="px-3 py-1.5 text-xs text-muted-foreground">
+                    No saved notes yet.
+                  </div>
                 </SidebarMenuItem>
               ) : (
-                recentFiles.map((note) => (
-                  <SidebarMenuItem key={note.path}>
-                    <SidebarMenuButton
-                      isActive={document.filePath === note.path}
-                      onClick={async () => {
-                        const loaded = await loadRecentFile(note.path)
-                        if (loaded) {
-                          onNavigateToEditor()
-                        }
-                      }}
-                      size="compact"
-                      className="h-auto min-h-8 items-start py-2 font-normal text-muted-foreground data-[active=true]:font-medium"
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate text-sm">{note.title}</div>
-                        <div className="truncate text-xs text-muted-foreground">{note.path}</div>
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))
+                recentFiles.map((note) => {
+                  const isActive = document.filePath === note.path
+
+                  return (
+                    <SidebarMenuItem key={note.path}>
+                      <DropdownMenu>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          onClick={async () => {
+                            const loaded = await loadRecentFile(note.path)
+                            if (loaded) {
+                              onNavigateToEditor()
+                            }
+                          }}
+                          size="sm"
+                          className="h-7 min-h-7 py-0 pr-8 font-normal text-muted-foreground data-[active=true]:font-medium"
+                        >
+                          <span className="truncate text-xs">{note.title}</span>
+                        </SidebarMenuButton>
+
+                        <SidebarMenuAction asChild>
+                          <DropdownMenuTrigger
+                            type="button"
+                            aria-label={`Options for ${note.title}`}
+                            className="top-1 h-5 w-5 [&>svg]:size-3.5"
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                          >
+                            <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={1.75} />
+                          </DropdownMenuTrigger>
+                        </SidebarMenuAction>
+
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem
+                            disabled={!isActive}
+                            onSelect={() => {
+                              void saveNow()
+                            }}
+                          >
+                            Save
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={!isActive}
+                            onSelect={() => {
+                              void saveAs()
+                            }}
+                          >
+                            Save As…
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onSelect={() => {
+                              void (async () => {
+                                const wasActive = document.filePath === note.path
+                                const ok = await deleteNoteByPath(note.path)
+                                if (ok && wasActive) {
+                                  onDeletedActiveNote?.()
+                                }
+                              })()
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </SidebarMenuItem>
+                  )
+                })
               )}
             </SidebarMenu>
           </SidebarGroupContent>

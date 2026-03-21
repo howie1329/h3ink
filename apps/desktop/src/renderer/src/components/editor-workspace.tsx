@@ -1,17 +1,12 @@
-import { FolderOpenIcon, SaveEnergy01Icon, SaveIcon } from '@hugeicons/core-free-icons'
+import { FolderOpenIcon, SaveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { MarkdownEditor } from '@/components/markdown-editor'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useDocumentSession } from '@/hooks/use-document-session'
 
-type EditorWorkspaceProps = {
-  onNavigateHome: () => void
-}
-
-export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React.JSX.Element {
+export function EditorWorkspace(): React.JSX.Element {
   const {
-    defaultNotesPath,
     document,
     errorMessage,
     ready,
@@ -19,48 +14,24 @@ export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React
     hydrateEditorState,
     updateContent,
     openFile,
-    saveNow,
-    saveAs,
-    deleteCurrentNote
+    saveNow
   } = useDocumentSession()
 
   return (
     <>
-      <header className="flex items-center justify-between border-b border-border px-4 py-2 md:px-6">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">{document.title}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {document.filePath ?? defaultNotesPath ?? 'Draft note'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="compact" onClick={() => void openFile()}>
+      <header className="flex min-h-9 items-center justify-between gap-3 border-b border-border px-3 py-1.5 md:px-4">
+        <p className="min-w-0 truncate text-xs font-medium text-foreground">{document.title}</p>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {!document.filePath ? (
+            <Button type="button" size="xs" onClick={() => void saveNow()}>
+              <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.5} />
+              Save
+            </Button>
+          ) : null}
+          <Button type="button" variant="outline" size="xs" onClick={() => void openFile()}>
             <HugeiconsIcon icon={FolderOpenIcon} data-icon="inline-start" strokeWidth={1.5} />
             Open
           </Button>
-          <Button type="button" variant="outline" size="compact" onClick={() => void saveAs()}>
-            <HugeiconsIcon icon={SaveEnergy01Icon} data-icon="inline-start" strokeWidth={1.5} />
-            Save As
-          </Button>
-          <Button type="button" size="compact" onClick={() => void saveNow()}>
-            <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.5} />
-            Save
-          </Button>
-          {document.filePath ? (
-            <Button
-              type="button"
-              variant="destructive"
-              size="compact"
-              onClick={async () => {
-                const deleted = await deleteCurrentNote()
-                if (deleted) {
-                  onNavigateHome()
-                }
-              }}
-            >
-              Delete
-            </Button>
-          ) : null}
           <SidebarTrigger className="text-foreground/78 md:hidden" />
         </div>
       </header>

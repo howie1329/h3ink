@@ -72,6 +72,7 @@ export type UseDocumentSessionResult = {
   saveNow: () => Promise<void>
   saveAs: () => Promise<void>
   deleteCurrentNote: () => Promise<boolean>
+  deleteNoteByPath: (path: string) => Promise<boolean>
 }
 
 const DocumentSessionContext = createContext<UseDocumentSessionResult | null>(null)
@@ -483,31 +484,40 @@ function useDocumentSessionState(): UseDocumentSessionResult {
     }
   }, [persistWithSaveAs])
 
+  const deleteNoteByPath = useCallback(
+    async (path: string): Promise<boolean> => {
+      const confirmed = window.confirm(`Delete this note?\n\n${path}`)
+      if (!confirmed) {
+        return false
+      }
+
+      try {
+        await window.api.deleteMarkdownFile({ path })
+        if (documentRef.current.filePath === path) {
+          dispatch({ type: 'resetDraft' })
+          await window.api.setLastActiveFilePath({ path: null })
+        }
+        await refreshRecents()
+        return true
+      } catch (error) {
+        dispatch({
+          type: 'setError',
+          message: error instanceof Error ? error.message : 'Delete failed.'
+        })
+        return false
+      }
+    },
+    [refreshRecents]
+  )
+
   const deleteCurrentNote = useCallback(async (): Promise<boolean> => {
     const currentPath = documentRef.current.filePath
     if (!currentPath) {
       return false
     }
 
-    const confirmed = window.confirm(`Delete this note?\n\n${currentPath}`)
-    if (!confirmed) {
-      return false
-    }
-
-    try {
-      await window.api.deleteMarkdownFile({ path: currentPath })
-      dispatch({ type: 'resetDraft' })
-      await window.api.setLastActiveFilePath({ path: null })
-      await refreshRecents()
-      return true
-    } catch (error) {
-      dispatch({
-        type: 'setError',
-        message: error instanceof Error ? error.message : 'Delete failed.'
-      })
-      return false
-    }
-  }, [refreshRecents])
+    return deleteNoteByPath(currentPath)
+  }, [deleteNoteByPath])
 
   const saveLabel = useMemo(() => {
     return getSaveLabel(state.document)
@@ -527,6 +537,7 @@ function useDocumentSessionState(): UseDocumentSessionResult {
     loadRecentFile,
     saveNow,
     saveAs,
-    deleteCurrentNote
+    deleteCurrentNote,
+    deleteNoteByPath
   }
 }

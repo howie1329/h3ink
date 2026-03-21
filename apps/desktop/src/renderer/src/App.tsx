@@ -48,7 +48,7 @@ function AppShell(): React.JSX.Element {
       )
     }
 
-    return <EditorWorkspace onNavigateHome={() => setScreen('home')} />
+    return <EditorWorkspace />
   }
 
   return (
@@ -61,6 +61,7 @@ function AppShell(): React.JSX.Element {
             onNavigateToEditor={() => setScreen('editor')}
             onOpenSettings={() => setScreen('settings')}
             onToggleTheme={() => setIsDarkMode((current) => !current)}
+            onDeletedActiveNote={() => setScreen('home')}
           />
 
           <SidebarInset className="bg-background">{renderScreen()}</SidebarInset>
