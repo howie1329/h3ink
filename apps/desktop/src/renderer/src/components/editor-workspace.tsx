@@ -1,85 +1,34 @@
-import { FolderOpenIcon, SaveEnergy01Icon, SaveIcon } from '@hugeicons/core-free-icons'
+import { FolderOpenIcon, SaveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { MarkdownEditor } from '@/components/markdown-editor'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useDocumentSession } from '@/hooks/use-document-session'
 
-type EditorWorkspaceProps = {
-  onNavigateHome: () => void
-}
-
-export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React.JSX.Element {
-  const {
-    defaultNotesPath,
-    document,
-    errorMessage,
-    ready,
-    saveLabel,
-    hydrateEditorState,
-    updateContent,
-    openFile,
-    saveNow,
-    saveAs,
-    deleteCurrentNote
-  } = useDocumentSession()
+export function EditorWorkspace(): React.JSX.Element {
+  const { document, errorMessage, hydrateEditorState, updateContent, openFile, saveNow } =
+    useDocumentSession()
 
   return (
-    <>
-      <header className="flex items-center justify-between border-b border-border px-4 py-2 md:px-6">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">{document.title}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {document.filePath ?? defaultNotesPath ?? 'Draft note'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="compact" onClick={() => void openFile()}>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <header className="flex min-h-9 shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-1.5 md:px-4">
+        <p className="min-w-0 truncate text-xs font-medium text-foreground">{document.title}</p>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {!document.filePath ? (
+            <Button type="button" size="xs" onClick={() => void saveNow()}>
+              <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.5} />
+              Save
+            </Button>
+          ) : null}
+          <Button type="button" variant="outline" size="xs" onClick={() => void openFile()}>
             <HugeiconsIcon icon={FolderOpenIcon} data-icon="inline-start" strokeWidth={1.5} />
             Open
           </Button>
-          <Button type="button" variant="outline" size="compact" onClick={() => void saveAs()}>
-            <HugeiconsIcon icon={SaveEnergy01Icon} data-icon="inline-start" strokeWidth={1.5} />
-            Save As
-          </Button>
-          <Button type="button" size="compact" onClick={() => void saveNow()}>
-            <HugeiconsIcon icon={SaveIcon} data-icon="inline-start" strokeWidth={1.5} />
-            Save
-          </Button>
-          {document.filePath ? (
-            <Button
-              type="button"
-              variant="destructive"
-              size="compact"
-              onClick={async () => {
-                const deleted = await deleteCurrentNote()
-                if (deleted) {
-                  onNavigateHome()
-                }
-              }}
-            >
-              Delete
-            </Button>
-          ) : null}
           <SidebarTrigger className="text-foreground/78 md:hidden" />
         </div>
       </header>
 
-      <div className="flex h-full flex-1 flex-col px-4 py-4 md:px-6">
-        <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-          <span>Status: {ready ? saveLabel : 'Loading'}</span>
-          {import.meta.env.DEV ? (
-            <>
-              <span>Origin: {document.origin}</span>
-              <span>Dirty: {document.isDirty ? 'Yes' : 'No'}</span>
-              <span>
-                Last saved:{' '}
-                {document.lastSavedAt ? new Date(document.lastSavedAt).toLocaleString() : 'Not yet'}
-              </span>
-            </>
-          ) : null}
-        </div>
-
+      <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 py-3 md:px-6 md:py-4">
         <MarkdownEditor
           key={document.sessionKey}
           value={document.content}
@@ -87,17 +36,12 @@ export function EditorWorkspace({ onNavigateHome }: EditorWorkspaceProps): React
           onChange={updateContent}
         />
 
-        <div className="mt-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-          H3 Ink edits supported Markdown in TipTap and saves back to `.md`. Drafts stay in memory
-          until `Save As`.
-        </div>
-
         {errorMessage ? (
-          <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="shrink-0 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {errorMessage}
           </div>
         ) : null}
       </div>
-    </>
+    </div>
   )
 }
