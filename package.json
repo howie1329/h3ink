@@ -16,6 +16,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "thomas-agentkit": "^0.6.0",
     "turbo": "^2.5.0"
   }
 }
